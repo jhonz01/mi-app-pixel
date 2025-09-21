@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Para Mi Amor 💕</title>
+  <style>
+    body {
+      background: #ffeef5;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #ff4d6d;
+      margin-bottom: 10px;
+    }
+
+    .characters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .characters img {
+      width: 150px;
+      image-rendering: pixelated;
+    }
+
+    .message-box {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      max-width: 400px;
+      margin: auto;
+      font-size: 18px;
+      color: #444;
+      min-height: 80px;
+    }
+
+    .btn {
+      background: #ff4d6d;
+      border: none;
+      padding: 12px 20px;
+      color: white;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .btn:hover {
+      background: #e63c5b;
+    }
+
+    .hearts {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 30px;
+      animation: floatUp 5s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) translateX(-50%); opacity: 1; }
+      100% { transform: translateY(-600px) translateX(-50%); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Para Ti 💖</h1>
+
+  <div class="characters">
+    <img src="ella.png" alt="Ella">
+    <img src="yo.png" alt="Yo">
+  </div>
+
+  <div class="message-box" id="message-box">
+    💌 Presiona el botón para tu mensajito
+  </div>
+
+  <button class="btn" onclick="showMessage()">Ver Mensajito</button>
+
+  <div class="hearts">💖</div>
+
+  <script>
+    const messages = [
+      
+    ];
+
+    function showMessage() {
+      const box = document.getElementById("message-box");
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      box.textContent = messages[randomIndex];
+    }
+  </script>
+</body>
+</html>
