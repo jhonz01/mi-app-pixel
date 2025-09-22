@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Pa' ti mi cachetona 💕</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
@@ -14,36 +15,28 @@
       font-family: "Press Start 2P", monospace;
       color: #fff;
       overflow: hidden;
-    }
-
-    h1 {
-      font-size: 14px;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px #000;
       text-align: center;
     }
 
-    /* Fondos dinámicos */
-    body.day {
-      background: linear-gradient(#6ec6ff, #b3e5fc);
-    }
-    body.sunset {
-      background: linear-gradient(#ff8a65, #ffcc80);
-    }
-    body.night {
-      background: linear-gradient(#0d0d26, #1a1a40);
-    }
-    body.dawn {
-      background: linear-gradient(#311b92, #512da8);
+    h1 {
+      font-size: 16px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px #000;
     }
 
-    /* Pixel sol */
+    /* Fondos dinámicos */
+    body.day { background: linear-gradient(#6ec6ff, #b3e5fc); }
+    body.sunset { background: linear-gradient(#ff8a65, #ffcc80); }
+    body.night { background: linear-gradient(#0d0d26, #1a1a40); }
+    body.dawn { background: linear-gradient(#311b92, #512da8); }
+
+    /* Sol */
     .sun {
-      width: 40px;
-      height: 40px;
+      width: 60px;
+      height: 60px;
       background: #ffeb3b;
       image-rendering: pixelated;
-      box-shadow: 0 0 10px #ffeb3b;
+      box-shadow: 0 0 15px #ffeb3b;
       position: absolute;
       top: 20px;
       left: 50%;
@@ -51,73 +44,75 @@
       display: none;
     }
 
-    /* Pixel luna */
+    /* Luna */
     .moon {
-      width: 30px;
-      height: 30px;
+      width: 50px;
+      height: 50px;
       background: #f5f5f5;
       border-radius: 50%;
       position: absolute;
       top: 30px;
       left: 60%;
       image-rendering: pixelated;
+      box-shadow: 0 0 8px #ccc;
       display: none;
     }
 
     /* Estrellas */
     .star {
       position: absolute;
-      width: 4px;
-      height: 4px;
+      width: 5px;
+      height: 5px;
       background: #fff;
       image-rendering: pixelated;
       animation: twinkle 2s infinite alternate;
+      box-shadow: 0 0 6px #fff;
     }
     @keyframes twinkle {
-      from { opacity: 0.2; }
+      from { opacity: 0.3; }
       to { opacity: 1; }
     }
 
     /* Estrella fugaz */
     .shooting-star {
       position: absolute;
-      width: 2px;
-      height: 2px;
+      width: 3px;
+      height: 3px;
       background: #fff;
-      box-shadow: 0 0 6px #fff;
+      box-shadow: 0 0 8px #fff;
       image-rendering: pixelated;
       animation: shoot 1.5s linear forwards;
     }
     @keyframes shoot {
       from { transform: translate(0,0); opacity: 1; }
-      to { transform: translate(200px,100px); opacity: 0; }
+      to { transform: translate(220px,120px); opacity: 0; }
     }
 
     /* Nubes */
     .cloud {
       position: absolute;
-      width: 50px;
-      height: 20px;
+      width: 80px;
+      height: 30px;
       background: #fff;
-      border-radius: 5px;
+      border-radius: 6px;
       image-rendering: pixelated;
-      opacity: 0.8;
-      animation: moveCloud 40s linear infinite;
+      opacity: 0.85;
+      animation: moveCloud 50s linear infinite;
     }
     @keyframes moveCloud {
-      from { left: -60px; }
+      from { left: -90px; }
       to { left: 110%; }
     }
 
     /* Mensajes */
     .message-box {
       margin-top: 20px;
-      padding: 10px;
+      padding: 14px;
       border-radius: 6px;
-      background: rgba(0,0,0,0.5);
-      font-size: 12px;
-      width: 80%;
-      max-width: 300px;
+      background: rgba(0,0,0,0.6);
+      font-size: 14px;
+      width: 85%;
+      max-width: 320px;
       text-align: center;
       display: none;
     }
@@ -127,9 +122,9 @@
       background: #ff4081;
       border: none;
       color: white;
-      padding: 10px 15px;
+      padding: 12px 18px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 14px;
       cursor: pointer;
       margin-top: 15px;
       font-family: inherit;
@@ -143,32 +138,38 @@
     /* Corazones pixelados */
     .heart {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 14px;
+      height: 14px;
       background: #ff1744;
       transform: rotate(45deg);
-      animation: floatUp 2s linear forwards;
+      animation: floatUp 2.5s linear forwards;
     }
     .heart::before,
     .heart::after {
       content: '';
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 14px;
+      height: 14px;
       background: #ff1744;
       border-radius: 50%;
     }
-    .heart::before {
-      top: -5px;
-      left: 0;
-    }
-    .heart::after {
-      left: -5px;
-      top: 0;
-    }
+    .heart::before { top: -7px; left: 0; }
+    .heart::after { left: -7px; top: 0; }
+
     @keyframes floatUp {
       from { transform: translateY(0) rotate(45deg); opacity: 1; }
-      to { transform: translateY(-150px) rotate(45deg); opacity: 0; }
+      to { transform: translateY(-170px) rotate(45deg); opacity: 0; }
+    }
+
+    /* 📱 Ajustes para pantallas pequeñas */
+    @media (max-width: 480px) {
+      h1 { font-size: 14px; }
+      .message-box { font-size: 13px; padding: 10px; }
+      button { font-size: 13px; padding: 10px 16px; }
+      .sun { width: 50px; height: 50px; }
+      .moon { width: 40px; height: 40px; }
+      .cloud { width: 70px; height: 25px; }
+      .heart { width: 12px; height: 12px; }
     }
   </style>
 </head>
@@ -202,15 +203,15 @@
         const heart = document.createElement("div");
         heart.classList.add("heart");
         heart.style.left = (window.innerWidth/2 + Math.random()*60 - 30) + "px";
-        heart.style.top = (window.innerHeight - 60) + "px";
+        heart.style.top = (window.innerHeight - 80) + "px";
         document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 2000);
+        setTimeout(() => heart.remove(), 2500);
       }
     }
 
     // Estrellas
     function createStars() {
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 50; i++) {
         const star = document.createElement("div");
         star.classList.add("star");
         star.style.left = Math.random() * window.innerWidth + "px";
@@ -232,10 +233,10 @@
 
     // Nubes
     function createClouds() {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         const cloud = document.createElement("div");
         cloud.classList.add("cloud");
-        cloud.style.top = 30 + i*40 + "px";
+        cloud.style.top = 40 + i*50 + "px";
         cloud.style.left = Math.random()*100 + "%";
         document.body.appendChild(cloud);
       }
@@ -275,3 +276,4 @@
   </script>
 </body>
 </html>
+
