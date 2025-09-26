@@ -1,279 +1,51 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Pa' ti mi cachetona 💕</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      font-family: "Press Start 2P", monospace;
-      color: #fff;
-      overflow: hidden;
-      text-align: center;
-    }
+<style>
+  .character {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    width: 128px;   /* Escalado 4x */
+    height: 128px;
+    image-rendering: pixelated;
+    transform: translateX(-50%);
+  }
 
-    h1 {
-      font-size: 16px;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px #000;
-    }
+  /* Idle */
+  .idle {
+    background: url("images/idle.png") no-repeat;
+    background-size: 512px 128px; /* 32*4 -> 128*4 */
+    animation: idleAnim 1s steps(4) infinite;
+  }
 
-    /* Fondos dinámicos */
-    body.day { background: linear-gradient(#6ec6ff, #b3e5fc); }
-    body.sunset { background: linear-gradient(#ff8a65, #ffcc80); }
-    body.night { background: linear-gradient(#0d0d26, #1a1a40); }
-    body.dawn { background: linear-gradient(#311b92, #512da8); }
+  /* Walk */
+  .walk {
+    background: url("images/walk.png") no-repeat;
+    background-size: 512px 128px;
+    animation: walkAnim 1s steps(4) infinite;
+  }
 
-    /* Sol */
-    .sun {
-      width: 60px;
-      height: 60px;
-      background: #ffeb3b;
-      image-rendering: pixelated;
-      box-shadow: 0 0 15px #ffeb3b;
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-    }
+  /* Run */
+  .run {
+    background: url("images/run.png") no-repeat;
+    background-size: 512px 128px;
+    animation: runAnim 0.6s steps(4) infinite;
+  }
 
-    /* Luna */
-    .moon {
-      width: 50px;
-      height: 50px;
-      background: #f5f5f5;
-      border-radius: 50%;
-      position: absolute;
-      top: 30px;
-      left: 60%;
-      image-rendering: pixelated;
-      box-shadow: 0 0 8px #ccc;
-      display: none;
-    }
+  @keyframes idleAnim { from { background-position-x: 0; } to { background-position-x: -512px; } }
+  @keyframes walkAnim { from { background-position-x: 0; } to { background-position-x: -512px; } }
+  @keyframes runAnim  { from { background-position-x: 0; } to { background-position-x: -512px; } }
+</style>
 
-    /* Estrellas */
-    .star {
-      position: absolute;
-      width: 5px;
-      height: 5px;
-      background: #fff;
-      image-rendering: pixelated;
-      animation: twinkle 2s infinite alternate;
-      box-shadow: 0 0 6px #fff;
-    }
-    @keyframes twinkle {
-      from { opacity: 0.3; }
-      to { opacity: 1; }
-    }
-
-    /* Estrella fugaz */
-    .shooting-star {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background: #fff;
-      box-shadow: 0 0 8px #fff;
-      image-rendering: pixelated;
-      animation: shoot 1.5s linear forwards;
-    }
-    @keyframes shoot {
-      from { transform: translate(0,0); opacity: 1; }
-      to { transform: translate(220px,120px); opacity: 0; }
-    }
-
-    /* Nubes */
-    .cloud {
-      position: absolute;
-      width: 80px;
-      height: 30px;
-      background: #fff;
-      border-radius: 6px;
-      image-rendering: pixelated;
-      opacity: 0.85;
-      animation: moveCloud 50s linear infinite;
-    }
-    @keyframes moveCloud {
-      from { left: -90px; }
-      to { left: 110%; }
-    }
-
-    /* Mensajes */
-    .message-box {
-      margin-top: 20px;
-      padding: 14px;
-      border-radius: 6px;
-      background: rgba(0,0,0,0.6);
-      font-size: 14px;
-      width: 85%;
-      max-width: 320px;
-      text-align: center;
-      display: none;
-    }
-
-    /* Botón */
-    button {
-      background: #ff4081;
-      border: none;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-      margin-top: 15px;
-      font-family: inherit;
-      box-shadow: 2px 2px 0px #000;
-    }
-    button:active {
-      transform: translateY(2px);
-      box-shadow: none;
-    }
-
-    /* Corazones pixelados */
-    .heart {
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      background: #ff1744;
-      transform: rotate(45deg);
-      animation: floatUp 2.5s linear forwards;
-    }
-    .heart::before,
-    .heart::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      background: #ff1744;
-      border-radius: 50%;
-    }
-    .heart::before { top: -7px; left: 0; }
-    .heart::after { left: -7px; top: 0; }
-
-    @keyframes floatUp {
-      from { transform: translateY(0) rotate(45deg); opacity: 1; }
-      to { transform: translateY(-170px) rotate(45deg); opacity: 0; }
-    }
-
-    /* 📱 Ajustes para pantallas pequeñas */
-    @media (max-width: 480px) {
-      h1 { font-size: 14px; }
-      .message-box { font-size: 13px; padding: 10px; }
-      button { font-size: 13px; padding: 10px 16px; }
-      .sun { width: 50px; height: 50px; }
-      .moon { width: 40px; height: 40px; }
-      .cloud { width: 70px; height: 25px; }
-      .heart { width: 12px; height: 12px; }
-    }
-  </style>
-</head>
 <body>
-  <h1>🎮 Pa' ti mi cachetona 💖</h1>
+  <div id="character" class="character idle"></div>
 
-  <div class="sun"></div>
-  <div class="moon"></div>
-
-  <!-- Botón -->
-  <button onclick="showMessage()">💌 Ver mensajito</button>
-  <div id="message" class="message-box"></div>
+  <button onclick="setAnim('idle')">Reposo</button>
+  <button onclick="setAnim('walk')">Caminar</button>
+  <button onclick="setAnim('run')">Correr</button>
 
   <script>
-    // Mensajes
-    const messages = [
-      "Eres mi power-up favorito 💖",
-      "Cada día contigo es un nuevo nivel 🎮",
-      "Siempre serás mi player 2 💕",
-      "Pa’ ti mi cachetona hermosa 🌹"
-    ];
-
-    function showMessage() {
-      const msgBox = document.getElementById("message");
-      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-      msgBox.innerText = randomMsg;
-      msgBox.style.display = "block";
-
-      // Corazones pixelados
-      for (let i = 0; i < 6; i++) {
-        const heart = document.createElement("div");
-        heart.classList.add("heart");
-        heart.style.left = (window.innerWidth/2 + Math.random()*60 - 30) + "px";
-        heart.style.top = (window.innerHeight - 80) + "px";
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 2500);
-      }
+    function setAnim(type) {
+      const char = document.getElementById("character");
+      char.className = "character " + type;
     }
-
-    // Estrellas
-    function createStars() {
-      for (let i = 0; i < 50; i++) {
-        const star = document.createElement("div");
-        star.classList.add("star");
-        star.style.left = Math.random() * window.innerWidth + "px";
-        star.style.top = Math.random() * window.innerHeight/2 + "px";
-        document.body.appendChild(star);
-      }
-    }
-
-    // Estrella fugaz
-    function shootingStar() {
-      const star = document.createElement("div");
-      star.classList.add("shooting-star");
-      star.style.left = Math.random() * window.innerWidth + "px";
-      star.style.top = Math.random() * window.innerHeight/2 + "px";
-      document.body.appendChild(star);
-      setTimeout(() => star.remove(), 1500);
-    }
-    setInterval(shootingStar, 15000);
-
-    // Nubes
-    function createClouds() {
-      for (let i = 0; i < 4; i++) {
-        const cloud = document.createElement("div");
-        cloud.classList.add("cloud");
-        cloud.style.top = 40 + i*50 + "px";
-        cloud.style.left = Math.random()*100 + "%";
-        document.body.appendChild(cloud);
-      }
-    }
-
-    // Cambiar tema según hora
-    function setTheme() {
-      const hour = new Date().getHours();
-      const body = document.body;
-      const sun = document.querySelector(".sun");
-      const moon = document.querySelector(".moon");
-
-      body.className = "";
-
-      if (hour >= 6 && hour < 12) {
-        body.classList.add("day");
-        sun.style.display = "block";
-        moon.style.display = "none";
-        createClouds();
-      } else if (hour >= 12 && hour < 18) {
-        body.classList.add("sunset");
-        sun.style.display = "block";
-        moon.style.display = "none";
-      } else if (hour >= 18 && hour < 22) {
-        body.classList.add("night");
-        sun.style.display = "none";
-        moon.style.display = "block";
-        createStars();
-      } else {
-        body.classList.add("dawn");
-        sun.style.display = "none";
-        moon.style.display = "block";
-        createStars();
-      }
-    }
-    setTheme();
   </script>
 </body>
-</html>
-
