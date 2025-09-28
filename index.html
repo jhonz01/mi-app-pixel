@@ -10,9 +10,8 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #222;
+      background: #232946;
       font-family: 'Press Start 2P', Arial, sans-serif;
-      text-align: center;
       height: 100%;
       width: 100vw;
     }
@@ -23,15 +22,20 @@
       min-width: 100vw;
       box-sizing: border-box;
       position: relative;
+      overflow: hidden;
     }
     h1 {
-      margin: 10px 0 0 0;
+      margin: 0;
       font-size: 5vw;
       color: #fff;
       text-shadow: 2px 2px 0 #000;
       letter-spacing: 2px;
       z-index: 2;
-      position: relative;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
     }
     #mensaje {
       background: rgba(0,0,0,0.7);
@@ -39,33 +43,30 @@
       padding: 10px 18px;
       border-radius: 12px;
       display: inline-block;
-      margin: 12px auto 8px auto;
       font-size: 4vw;
       box-shadow: 0 2px 8px #0006;
       min-width: 60vw;
       max-width: 90vw;
-      z-index: 2;
-      position: relative;
+      z-index: 3;
+      position: absolute;
+      left: 50%;
+      top: 60px;
+      transform: translateX(-50%);
+      text-align: center;
     }
     #gameCanvas {
-      display: block;
-      margin: 0 auto;
-      background: #222;
-      width: 100vw;
-      height: calc(100vh - 120px);
-      max-width: 100vw;
-      max-height: 100vh;
-      image-rendering: pixelated;
-      border: none;
-      touch-action: none;
       position: absolute;
-      left: 0;
-      top: 0;
+      left: 0; top: 0;
+      width: 100vw;
+      height: 100vh;
+      image-rendering: pixelated;
       z-index: 1;
+      background: #232946;
+      touch-action: none;
     }
     .controles {
       position: fixed;
-      bottom: 10px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -74,6 +75,7 @@
       width: 95vw;
       justify-content: center;
       flex-wrap: wrap;
+      pointer-events: auto;
     }
     .control-btn {
       background: #232946;
@@ -160,7 +162,7 @@
     // --- AJUSTAR CANVAS A PANTALLA ---
     function resizeCanvas() {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight - 120;
+      canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
@@ -177,13 +179,13 @@
 
     // --- PERSONAJE ---
     let player = {
-      x: 40,
+      x: 100,
       y: 0,
-      width: 32,
-      height: 32,
+      width: 48,
+      height: 48,
       frame: 0,
       frameCount: 4,
-      speed: 1.2,
+      speed: 2,
       action: "walk"
     };
     let keys = { left: false, right: false, action: "walk" };
@@ -198,84 +200,69 @@
       return "night";
     }
 
-    // --- NUBES PIXELART BONITAS ---
+    // --- NUBES PIXELART ---
     function drawCloud(x, y, scale=1) {
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(scale, scale);
       ctx.fillStyle = "#fff";
-      ctx.fillRect(4, 6, 16, 8);
-      ctx.fillRect(0, 10, 24, 8);
-      ctx.fillRect(8, 2, 8, 8);
+      ctx.fillRect(8, 16, 32, 16);
+      ctx.fillRect(0, 24, 48, 16);
+      ctx.fillRect(16, 8, 16, 16);
       ctx.restore();
     }
 
     // --- LUNA PIXELART ---
-    function drawMoon(x, y) {
+    function drawMoon(x, y, r=32) {
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#fffbe6";
       ctx.beginPath();
-      ctx.arc(0, 0, 18, 0, Math.PI*2);
+      ctx.arc(0, 0, r, 0, Math.PI*2);
       ctx.fill();
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.arc(4, 0, 14, 0, Math.PI*2);
+      ctx.arc(r*0.3, 0, r*0.8, 0, Math.PI*2);
       ctx.fill();
       ctx.globalCompositeOperation = "source-over";
       ctx.restore();
     }
 
     // --- SOL PIXELART ---
-    function drawSun(x, y) {
+    function drawSun(x, y, r=32) {
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#ffe066";
       ctx.beginPath();
-      ctx.arc(0, 0, 10, 0, Math.PI*2);
+      ctx.arc(0, 0, r, 0, Math.PI*2);
       ctx.fill();
       // rayos
       ctx.strokeStyle = "#ffe066";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       for(let i=0;i<8;i++){
         ctx.beginPath();
         ctx.moveTo(0,0);
-        ctx.lineTo(Math.cos(i*Math.PI/4)*14, Math.sin(i*Math.PI/4)*14);
+        ctx.lineTo(Math.cos(i*Math.PI/4)*r*1.5, Math.sin(i*Math.PI/4)*r*1.5);
         ctx.stroke();
       }
       ctx.restore();
     }
 
-    // --- FLORES PIXELART ---
-    function drawFlower(x, y) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.fillStyle = "#3cb371";
-      ctx.fillRect(6, 10, 2, 6); // tallo
-      ctx.fillStyle = "#ff66a3";
-      ctx.beginPath();
-      ctx.arc(7, 10, 3, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = "#fff700";
-      ctx.beginPath();
-      ctx.arc(7, 10, 1, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // --- CORAZONES PIXELART ---
-    function drawHeart(x, y, scale=1) {
+    // --- CORAZONES PIXELART ROJOS Y GRANDES ---
+    function drawHeart(x, y, scale=2) {
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(scale, scale);
-      ctx.fillStyle = "#ff66a3";
-      ctx.beginPath();
-      ctx.moveTo(8, 12);
-      ctx.bezierCurveTo(8, 8, 0, 8, 0, 12);
-      ctx.bezierCurveTo(0, 16, 8, 20, 8, 24);
-      ctx.bezierCurveTo(8, 20, 16, 16, 16, 12);
-      ctx.bezierCurveTo(16, 8, 8, 8, 8, 12);
-      ctx.fill();
+      ctx.fillStyle = "#e63946";
+      // Pixelart corazón (16x16)
+      ctx.fillRect(2,4,4,4);
+      ctx.fillRect(0,8,4,4);
+      ctx.fillRect(2,12,4,4);
+      ctx.fillRect(10,4,4,4);
+      ctx.fillRect(12,8,4,4);
+      ctx.fillRect(10,12,4,4);
+      ctx.fillRect(4,2,8,4);
+      ctx.fillRect(4,6,8,10);
       ctx.restore();
     }
 
@@ -284,9 +271,21 @@
       ctx.save();
       ctx.globalAlpha = bright;
       ctx.fillStyle = "#fff";
-      ctx.fillRect(x, y, 2, 2);
-      ctx.fillRect(x-1, y+1, 1, 1);
-      ctx.fillRect(x+2, y+1, 1, 1);
+      ctx.fillRect(x, y, 4, 4);
+      ctx.fillRect(x-2, y+2, 2, 2);
+      ctx.fillRect(x+4, y+2, 2, 2);
+      ctx.restore();
+    }
+
+    // --- AVES PIXELART ---
+    function drawBird(x, y, scale=2, flip=false) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(flip ? -scale : scale, scale);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(0, 0, 8, 2);
+      ctx.fillRect(6, -2, 2, 2);
+      ctx.fillRect(6, 2, 2, 2);
       ctx.restore();
     }
 
@@ -295,37 +294,39 @@
       ctx.save();
       ctx.globalAlpha = star.alpha;
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(star.x, star.y);
       ctx.lineTo(star.x - star.length * Math.cos(star.angle), star.y - star.length * Math.sin(star.angle));
       ctx.stroke();
       ctx.globalAlpha = star.alpha * 0.7;
       ctx.strokeStyle = "#ffe066";
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(star.x, star.y);
-      ctx.lineTo(star.x - (star.length-6) * Math.cos(star.angle), star.y - (star.length-6) * Math.sin(star.angle));
+      ctx.lineTo(star.x - (star.length-20) * Math.cos(star.angle), star.y - (star.length-20) * Math.sin(star.angle));
       ctx.stroke();
       ctx.restore();
     }
 
     // --- ESTADO DEL PAISAJE ---
     let clouds = [
-      {x: 30, y: 18, s: 1.2, dx: 0.08},
-      {x: 120, y: 10, s: 1, dx: 0.06},
-      {x: 220, y: 25, s: 0.8, dx: 0.04}
+      {x: 0.1, y: 0.12, s: 0.18, dx: 0.0008},
+      {x: 0.4, y: 0.08, s: 0.13, dx: 0.0006},
+      {x: 0.7, y: 0.16, s: 0.15, dx: 0.0004}
     ];
-    let flowers = Array.from({length: 12}, (_,i) => ({
-      x: 10 + i*25 + Math.random()*10, y: 120 + Math.random()*10
+    let hearts = Array.from({length: 12}, () => ({
+      x: Math.random(), y: Math.random(), s: 1.5+Math.random()*1.5, speed: 0.0002+Math.random()*0.0003
     }));
-    let hearts = Array.from({length: 6}, () => ({
-      x: Math.random()*320, y: 160+Math.random()*30, s: 0.7+Math.random()*0.7, speed: 0.2+Math.random()*0.2
+
+    // --- AVES ---
+    let birds = Array.from({length: 5}, () => ({
+      x: Math.random(), y: 0.08+Math.random()*0.12, speed: 0.0005+Math.random()*0.0005, flip: Math.random()>0.5
     }));
 
     // --- ESTRELLAS ---
-    let stars = Array.from({length: 40}, () => ({
-      x: Math.random()*320, y: Math.random()*60, bright: Math.random()
+    let stars = Array.from({length: 60}, () => ({
+      x: Math.random(), y: Math.random()*0.25, bright: Math.random()
     }));
 
     // --- ESTRELLA FUGAZ ---
@@ -336,23 +337,22 @@
     function nuevoMensaje() {
       let msg = mensajes[Math.floor(Math.random()*mensajes.length)];
       document.getElementById("mensaje").innerText = msg;
-      lanzarEstrellaFugaz();
+      if(getSkyState() === "night" || getSkyState() === "sunset") lanzarEstrellaFugaz();
     }
 
     // --- LANZAR ESTRELLA FUGAZ ---
     function lanzarEstrellaFugaz() {
-      // Sale de un borde aleatorio y cruza el cielo en diagonal
       let fromLeft = Math.random() > 0.5;
-      let yStart = Math.random()*40+10;
+      let yStart = Math.random()*canvas.height*0.3+20;
       let angle = (fromLeft ? Math.random()*0.5+0.2 : Math.PI-Math.random()*0.5-0.2);
       shootingStar = {
-        x: fromLeft ? -20 : 340,
+        x: fromLeft ? -40 : canvas.width+40,
         y: yStart,
-        vx: Math.cos(angle)*6,
-        vy: Math.sin(angle)*6,
+        vx: Math.cos(angle)*16,
+        vy: Math.sin(angle)*16,
         alpha: 1,
         angle: angle,
-        length: 32+Math.random()*16
+        length: 100+Math.random()*40
       };
       lastShooting = Date.now();
     }
@@ -391,22 +391,32 @@
       if (keys.left) player.x -= spd;
       if (keys.right) player.x += spd;
       player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+      player.y = canvas.height - player.height - 60;
       player.action = keys.action;
 
       // --- Animar nubes ---
       clouds.forEach(cl => {
         cl.x += cl.dx;
-        if (cl.x > 340) cl.x = -40;
+        if (cl.x > 1.1) cl.x = -0.2;
       });
 
       // --- Animar corazones flotando ---
       hearts.forEach(h => {
         h.y -= h.speed;
-        if (h.y < -10) {
-          h.y = 160+Math.random()*30;
-          h.x = Math.random()*320;
+        if (h.y < -0.1) {
+          h.y = 1.1;
+          h.x = Math.random();
         }
       });
+
+      // --- Animar aves ---
+      if(getSkyState() === "day" || getSkyState() === "dawn") {
+        birds.forEach(b => {
+          b.x += b.speed * (b.flip ? -1 : 1);
+          if (b.x > 1.1) { b.x = -0.1; b.y = 0.08+Math.random()*0.12; b.flip = false; }
+          if (b.x < -0.1) { b.x = 1.1; b.y = 0.08+Math.random()*0.12; b.flip = true; }
+        });
+      }
 
       // --- Animar estrellas titilando ---
       if (getSkyState() === "sunset" || getSkyState() === "night") {
@@ -416,18 +426,18 @@
         });
       }
 
-      // --- Estrella fugaz automática cada 8s ---
-      if (!shootingStar && Date.now() - lastShooting > 8000) lanzarEstrellaFugaz();
+      // --- Estrella fugaz automática cada 8s solo de noche/sunset ---
+      if ((getSkyState() === "night" || getSkyState() === "sunset") && !shootingStar && Date.now() - lastShooting > 8000) lanzarEstrellaFugaz();
 
       // --- Animar estrella fugaz ---
       if (shootingStar) {
         shootingStar.x += shootingStar.vx;
         shootingStar.y += shootingStar.vy;
-        shootingStar.alpha -= 0.018;
+        shootingStar.alpha -= 0.012;
         if (
           shootingStar.alpha <= 0 ||
-          shootingStar.x < -40 || shootingStar.x > 360 ||
-          shootingStar.y < -20 || shootingStar.y > 100
+          shootingStar.x < -80 || shootingStar.x > canvas.width+80 ||
+          shootingStar.y < -40 || shootingStar.y > canvas.height*0.5
         ) shootingStar = null;
       }
 
@@ -440,53 +450,47 @@
       // --- Fondo cielo según hora ---
       let sky = getSkyState();
       if (sky === "dawn") {
-        let grad = ctx.createLinearGradient(0,0,0,160);
+        let grad = ctx.createLinearGradient(0,0,0,canvas.height);
         grad.addColorStop(0, "#f9d29d");
         grad.addColorStop(1, "#a1c4fd");
         ctx.fillStyle = grad;
       } else if (sky === "day") {
         ctx.fillStyle = "#87ceeb";
       } else if (sky === "sunset") {
-        let grad = ctx.createLinearGradient(0,0,0,160);
+        let grad = ctx.createLinearGradient(0,0,0,canvas.height);
         grad.addColorStop(0, "#fcb69f");
         grad.addColorStop(1, "#a1c4fd");
         ctx.fillStyle = grad;
       } else {
         ctx.fillStyle = "#232946";
       }
-      ctx.fillRect(0,0,320,160);
+      ctx.fillRect(0,0,canvas.width,canvas.height);
 
       // --- Sol/Luna ---
-      if (sky === "dawn") drawSun(260, 28);
-      if (sky === "day") drawSun(260, 24);
-      if (sky === "sunset") drawSun(260, 38);
-      if (sky === "night") drawMoon(260, 24);
+      if (sky === "dawn") drawSun(canvas.width-80, 80, 40);
+      if (sky === "day") drawSun(canvas.width-80, 60, 40);
+      if (sky === "sunset") drawSun(canvas.width-80, 120, 40);
+      if (sky === "night") drawMoon(canvas.width-80, 60, 40);
 
       // --- Nubes ---
-      if (sky !== "night") clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s));
-      else clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s*0.8));
+      if (sky !== "night") clouds.forEach(cl => drawCloud(cl.x*canvas.width, cl.y*canvas.height, cl.s*canvas.width/100));
+      else clouds.forEach(cl => drawCloud(cl.x*canvas.width, cl.y*canvas.height, cl.s*canvas.width/120));
 
       // --- Estrellas ---
       if (sky === "sunset" || sky === "night") {
-        stars.forEach(s => drawStar(s.x, s.y, s.bright));
+        stars.forEach(s => drawStar(s.x*canvas.width, s.y*canvas.height, s.bright));
       }
 
       // --- Estrella fugaz ---
       if (shootingStar) drawShootingStar(shootingStar);
 
-      // --- Lago pixelart ---
-      ctx.fillStyle = "#1e90ff";
-      ctx.fillRect(0, 120, 320, 20);
-
-      // --- Césped pixelart ---
-      ctx.fillStyle = "#3cb371";
-      ctx.fillRect(0, 110, 320, 12);
-
-      // --- Flores pixelart ---
-      flowers.forEach(f => drawFlower(f.x, f.y));
+      // --- Aves (solo de día y amanecer) ---
+      if(sky === "day" || sky === "dawn") {
+        birds.forEach(b => drawBird(b.x*canvas.width, b.y*canvas.height, 2.5, b.flip));
+      }
 
       // --- Corazones flotando pixelart ---
-      hearts.forEach(h => drawHeart(h.x, h.y, h.s));
+      hearts.forEach(h => drawHeart(h.x*canvas.width, h.y*canvas.height, h.s*canvas.width/600));
 
       // --- Personaje ---
       let sprite = sprites[player.action];
