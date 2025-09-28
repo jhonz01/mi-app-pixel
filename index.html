@@ -14,6 +14,9 @@
       font-family: 'Press Start 2P', Arial, sans-serif;
       height: 100%;
       width: 100vw;
+      /* Evita doble scroll en móviles */
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
     }
     body {
       width: 100vw;
@@ -23,6 +26,9 @@
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
+      /* Evita doble scroll en móviles */
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
     }
     h1 {
       margin: 0;
@@ -63,6 +69,8 @@
       z-index: 1;
       background: #232946;
       touch-action: none;
+      /* Para que no se mueva al hacer scroll en móvil */
+      overscroll-behavior: contain;
     }
     .controles {
       position: fixed;
@@ -161,8 +169,11 @@
 
     // --- AJUSTAR CANVAS A PANTALLA ---
     function resizeCanvas() {
+      // Usa window.innerHeight para evitar barras en móvil
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      // Ajusta posición del personaje para que no quede tapado por controles
+      player.y = canvas.height - player.height - 100;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
@@ -391,7 +402,8 @@
       if (keys.left) player.x -= spd;
       if (keys.right) player.x += spd;
       player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-      player.y = canvas.height - player.height - 60;
+      // Ajusta posición del personaje para que no quede tapado por controles
+      player.y = canvas.height - player.height - 100;
       player.action = keys.action;
 
       // --- Animar nubes ---
