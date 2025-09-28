@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Pa' ti mi cachetona 💖</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -16,12 +16,22 @@
       height: 100%;
       width: 100vw;
     }
+    body {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      min-width: 100vw;
+      box-sizing: border-box;
+      position: relative;
+    }
     h1 {
       margin: 10px 0 0 0;
       font-size: 5vw;
       color: #fff;
       text-shadow: 2px 2px 0 #000;
       letter-spacing: 2px;
+      z-index: 2;
+      position: relative;
     }
     #mensaje {
       background: rgba(0,0,0,0.7);
@@ -34,18 +44,24 @@
       box-shadow: 0 2px 8px #0006;
       min-width: 60vw;
       max-width: 90vw;
+      z-index: 2;
+      position: relative;
     }
     #gameCanvas {
       display: block;
       margin: 0 auto;
       background: #222;
       width: 100vw;
+      height: calc(100vh - 120px);
       max-width: 100vw;
-      height: 60vw;
-      max-height: 70vw;
+      max-height: 100vh;
       image-rendering: pixelated;
-      border: 2px solid #333;
+      border: none;
       touch-action: none;
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 1;
     }
     .controles {
       position: fixed;
@@ -105,7 +121,6 @@
     @media (max-width: 600px) {
       h1 { font-size: 7vw; }
       #mensaje { font-size: 5vw; }
-      #gameCanvas { height: 60vw; }
       .control-btn { width: 48px; height: 48px; font-size: 1.5rem; }
     }
   </style>
@@ -113,7 +128,7 @@
 <body>
   <h1>🎮 Pa' ti mi cachetona 💖</h1>
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
-  <canvas id="gameCanvas" width="320" height="160"></canvas>
+  <canvas id="gameCanvas"></canvas>
   <div class="controles">
     <button id="btnLeft" class="control-btn">◀️</button>
     <button id="btnIdle" class="speed-btn control-btn" title="Quieto">⏸️</button>
@@ -142,6 +157,14 @@
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
+    // --- AJUSTAR CANVAS A PANTALLA ---
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 120;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
     // --- SPRITES (PERSONAJE) ---
     const sprites = {
       idle: new Image(),
@@ -155,7 +178,7 @@
     // --- PERSONAJE ---
     let player = {
       x: 40,
-      y: 96,
+      y: 0,
       width: 32,
       height: 32,
       frame: 0,
@@ -193,11 +216,11 @@
       ctx.translate(x, y);
       ctx.fillStyle = "#fffbe6";
       ctx.beginPath();
-      ctx.arc(0, 0, 10, 0, Math.PI*2);
+      ctx.arc(0, 0, 18, 0, Math.PI*2);
       ctx.fill();
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.arc(4, 0, 8, 0, Math.PI*2);
+      ctx.arc(4, 0, 14, 0, Math.PI*2);
       ctx.fill();
       ctx.globalCompositeOperation = "source-over";
       ctx.restore();
