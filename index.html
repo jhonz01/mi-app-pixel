@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pa' ti mi cachetona 💖</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     html, body {
       margin: 0;
       padding: 0;
@@ -44,6 +45,7 @@
       max-height: 70vw;
       image-rendering: pixelated;
       border: 2px solid #333;
+      touch-action: none;
     }
     .controles {
       position: fixed;
@@ -51,35 +53,61 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 10px;
+      gap: 18px;
       z-index: 10;
       width: 95vw;
       justify-content: center;
       flex-wrap: wrap;
     }
-    .controles button {
-      background: #ff66a3;
-      border: 2px solid #fff;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 7vw;
-      box-shadow: 2px 2px 5px #0004;
-      color: #fff;
-      font-family: inherit;
-      min-width: 60px;
-      min-height: 60px;
+    .control-btn {
+      background: #232946;
+      border: 3px solid #ff66a3;
+      color: #ff66a3;
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+      font-size: 2.2rem;
+      box-shadow: 0 2px 8px #0006;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 2px;
+      transition: background 0.2s, color 0.2s;
       cursor: pointer;
-      transition: background 0.2s;
+      font-family: inherit;
+      user-select: none;
     }
-    .controles button:active {
-      background: #ff3380;
+    .control-btn:active {
+      background: #ff66a3;
+      color: #232946;
+    }
+    .speed-btn {
+      border: 3px solid #ffe066;
+      color: #ffe066;
+      background: #232946;
+      margin-left: 8px;
+      margin-right: 8px;
+    }
+    .speed-btn.active {
+      background: #ffe066;
+      color: #232946;
+    }
+    .msg-btn {
+      border: 3px solid #fff700;
+      color: #fff700;
+      background: #232946;
+      margin-left: 8px;
+    }
+    .msg-btn:active {
+      background: #fff700;
+      color: #232946;
     }
     @media (max-width: 600px) {
       h1 { font-size: 7vw; }
       #mensaje { font-size: 5vw; }
       #gameCanvas { height: 60vw; }
+      .control-btn { width: 48px; height: 48px; font-size: 1.5rem; }
     }
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   </style>
 </head>
 <body>
@@ -87,12 +115,12 @@
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
   <div class="controles">
-    <button id="btnLeft">⬅️</button>
-    <button id="btnIdle">😴</button>
-    <button id="btnWalk">🚶</button>
-    <button id="btnRun">🏃</button>
-    <button id="btnRight">➡️</button>
-    <button id="btnMensaje" title="Nuevo mensajito">💌</button>
+    <button id="btnLeft" class="control-btn">◀️</button>
+    <button id="btnIdle" class="speed-btn control-btn" title="Quieto">⏸️</button>
+    <button id="btnWalk" class="speed-btn control-btn active" title="Caminar">🚶</button>
+    <button id="btnRun" class="speed-btn control-btn" title="Correr">🏃</button>
+    <button id="btnRight" class="control-btn">▶️</button>
+    <button id="btnMensaje" class="msg-btn control-btn" title="Nuevo mensajito">💌</button>
   </div>
   <script>
     // --- CONFIGURACIÓN ---
@@ -127,15 +155,15 @@
     // --- PERSONAJE ---
     let player = {
       x: 40,
-      y: 80,
+      y: 96,
       width: 32,
       height: 32,
       frame: 0,
       frameCount: 4,
-      speed: 1.5,
-      action: "idle"
+      speed: 1.2,
+      action: "walk"
     };
-    let keys = { left: false, right: false, action: "idle" };
+    let keys = { left: false, right: false, action: "walk" };
 
     // --- PAISAJE DINÁMICO ---
     function getSkyState() {
@@ -147,27 +175,29 @@
       return "night";
     }
 
-    // --- NUBES PIXELART ---
+    // --- NUBES PIXELART BONITAS ---
     function drawCloud(x, y, scale=1) {
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(scale, scale);
       ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, 16, 8);
-      ctx.fillRect(4, -4, 8, 8);
-      ctx.fillRect(8, 4, 8, 6);
+      ctx.fillRect(4, 6, 16, 8);
+      ctx.fillRect(0, 10, 24, 8);
+      ctx.fillRect(8, 2, 8, 8);
       ctx.restore();
     }
 
     // --- LUNA PIXELART ---
-    function drawMoon(x, y, phase=1) {
+    function drawMoon(x, y) {
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#fffbe6";
-      ctx.fillRect(0, 0, 16, 16);
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI*2);
+      ctx.fill();
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.arc(8 + 4*phase, 8, 8, 0, Math.PI*2);
+      ctx.arc(4, 0, 8, 0, Math.PI*2);
       ctx.fill();
       ctx.globalCompositeOperation = "source-over";
       ctx.restore();
@@ -178,7 +208,18 @@
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#ffe066";
-      ctx.fillRect(0, 0, 16, 16);
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI*2);
+      ctx.fill();
+      // rayos
+      ctx.strokeStyle = "#ffe066";
+      ctx.lineWidth = 2;
+      for(let i=0;i<8;i++){
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(i*Math.PI/4)*14, Math.sin(i*Math.PI/4)*14);
+        ctx.stroke();
+      }
       ctx.restore();
     }
 
@@ -186,13 +227,16 @@
     function drawFlower(x, y) {
       ctx.save();
       ctx.translate(x, y);
+      ctx.fillStyle = "#3cb371";
+      ctx.fillRect(6, 10, 2, 6); // tallo
       ctx.fillStyle = "#ff66a3";
-      ctx.fillRect(4, 0, 4, 4);
-      ctx.fillRect(0, 4, 4, 4);
-      ctx.fillRect(8, 4, 4, 4);
-      ctx.fillRect(4, 8, 4, 4);
+      ctx.beginPath();
+      ctx.arc(7, 10, 3, 0, Math.PI*2);
+      ctx.fill();
       ctx.fillStyle = "#fff700";
-      ctx.fillRect(4, 4, 4, 4);
+      ctx.beginPath();
+      ctx.arc(7, 10, 1, 0, Math.PI*2);
+      ctx.fill();
       ctx.restore();
     }
 
@@ -202,9 +246,13 @@
       ctx.translate(x, y);
       ctx.scale(scale, scale);
       ctx.fillStyle = "#ff66a3";
-      ctx.fillRect(2,0,4,4);
-      ctx.fillRect(0,2,8,4);
-      ctx.fillRect(2,6,4,4);
+      ctx.beginPath();
+      ctx.moveTo(8, 12);
+      ctx.bezierCurveTo(8, 8, 0, 8, 0, 12);
+      ctx.bezierCurveTo(0, 16, 8, 20, 8, 24);
+      ctx.bezierCurveTo(8, 20, 16, 16, 16, 12);
+      ctx.bezierCurveTo(16, 8, 8, 8, 8, 12);
+      ctx.fill();
       ctx.restore();
     }
 
@@ -214,6 +262,8 @@
       ctx.globalAlpha = bright;
       ctx.fillStyle = "#fff";
       ctx.fillRect(x, y, 2, 2);
+      ctx.fillRect(x-1, y+1, 1, 1);
+      ctx.fillRect(x+2, y+1, 1, 1);
       ctx.restore();
     }
 
@@ -221,32 +271,37 @@
     function drawShootingStar(star) {
       ctx.save();
       ctx.globalAlpha = star.alpha;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(star.x, star.y, 6, 2);
-      ctx.fillStyle = "#ffe066";
-      ctx.fillRect(star.x+4, star.y, 2, 2);
-      // cola
-      ctx.globalAlpha = star.alpha * 0.5;
-      ctx.fillStyle = "#fff";
-      for(let i=1;i<=4;i++) ctx.fillRect(star.x-2*i, star.y, 2, 2);
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(star.x, star.y);
+      ctx.lineTo(star.x - star.length * Math.cos(star.angle), star.y - star.length * Math.sin(star.angle));
+      ctx.stroke();
+      ctx.globalAlpha = star.alpha * 0.7;
+      ctx.strokeStyle = "#ffe066";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(star.x, star.y);
+      ctx.lineTo(star.x - (star.length-6) * Math.cos(star.angle), star.y - (star.length-6) * Math.sin(star.angle));
+      ctx.stroke();
       ctx.restore();
     }
 
     // --- ESTADO DEL PAISAJE ---
     let clouds = [
-      {x: 30, y: 18, s: 1.2, dx: 0.1},
-      {x: 120, y: 10, s: 1, dx: 0.07},
-      {x: 220, y: 25, s: 0.8, dx: 0.05}
+      {x: 30, y: 18, s: 1.2, dx: 0.08},
+      {x: 120, y: 10, s: 1, dx: 0.06},
+      {x: 220, y: 25, s: 0.8, dx: 0.04}
     ];
     let flowers = Array.from({length: 12}, (_,i) => ({
       x: 10 + i*25 + Math.random()*10, y: 120 + Math.random()*10
     }));
     let hearts = Array.from({length: 6}, () => ({
-      x: Math.random()*320, y: 160+Math.random()*30, s: 1+Math.random()*0.7, speed: 0.2+Math.random()*0.2
+      x: Math.random()*320, y: 160+Math.random()*30, s: 0.7+Math.random()*0.7, speed: 0.2+Math.random()*0.2
     }));
 
     // --- ESTRELLAS ---
-    let stars = Array.from({length: 30}, () => ({
+    let stars = Array.from({length: 40}, () => ({
       x: Math.random()*320, y: Math.random()*60, bright: Math.random()
     }));
 
@@ -263,17 +318,23 @@
 
     // --- LANZAR ESTRELLA FUGAZ ---
     function lanzarEstrellaFugaz() {
+      // Sale de un borde aleatorio y cruza el cielo en diagonal
+      let fromLeft = Math.random() > 0.5;
+      let yStart = Math.random()*40+10;
+      let angle = (fromLeft ? Math.random()*0.5+0.2 : Math.PI-Math.random()*0.5-0.2);
       shootingStar = {
-        x: Math.random()*160+60,
-        y: Math.random()*40+10,
-        vx: -3-Math.random()*2,
-        vy: 1+Math.random()*1.5,
-        alpha: 1
+        x: fromLeft ? -20 : 340,
+        y: yStart,
+        vx: Math.cos(angle)*6,
+        vy: Math.sin(angle)*6,
+        alpha: 1,
+        angle: angle,
+        length: 32+Math.random()*16
       };
       lastShooting = Date.now();
     }
 
-    // --- CONTROLES TÁCTILES ---
+    // --- CONTROLES TÁCTILES Y BOTONES ---
     function addBtnEvents(btn, onDown, onUp) {
       btn.onmousedown = onDown;
       btn.onmouseup = onUp;
@@ -282,9 +343,18 @@
     }
     addBtnEvents(document.getElementById("btnLeft"), () => { keys.left = true; }, () => { keys.left = false; });
     addBtnEvents(document.getElementById("btnRight"), () => { keys.right = true; }, () => { keys.right = false; });
-    document.getElementById("btnIdle").onclick = () => { keys.action = "idle"; };
-    document.getElementById("btnWalk").onclick = () => { keys.action = "walk"; };
-    document.getElementById("btnRun").onclick = () => { keys.action = "run"; };
+
+    // --- VELOCIDAD Y ACCIÓN ---
+    function setAction(action) {
+      keys.action = action;
+      document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+      if(action === "idle") document.getElementById("btnIdle").classList.add('active');
+      if(action === "walk") document.getElementById("btnWalk").classList.add('active');
+      if(action === "run") document.getElementById("btnRun").classList.add('active');
+    }
+    document.getElementById("btnIdle").onclick = () => setAction("idle");
+    document.getElementById("btnWalk").onclick = () => setAction("walk");
+    document.getElementById("btnRun").onclick = () => setAction("run");
     document.getElementById("btnMensaje").onclick = nuevoMensaje;
 
     // --- ANIMACIÓN PRINCIPAL ---
@@ -294,7 +364,7 @@
       // --- Animación personaje ---
       if (frameTimer % 10 === 0) player.frame = (player.frame + 1) % player.frameCount;
       // --- Movimiento personaje ---
-      let spd = player.speed * (keys.action === "run" ? 2 : keys.action === "walk" ? 1 : 0);
+      let spd = player.speed * (keys.action === "run" ? 2.2 : keys.action === "walk" ? 1 : 0);
       if (keys.left) player.x -= spd;
       if (keys.right) player.x += spd;
       player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
@@ -330,8 +400,12 @@
       if (shootingStar) {
         shootingStar.x += shootingStar.vx;
         shootingStar.y += shootingStar.vy;
-        shootingStar.alpha -= 0.025;
-        if (shootingStar.alpha <= 0 || shootingStar.x < -20 || shootingStar.y > 100) shootingStar = null;
+        shootingStar.alpha -= 0.018;
+        if (
+          shootingStar.alpha <= 0 ||
+          shootingStar.x < -40 || shootingStar.x > 360 ||
+          shootingStar.y < -20 || shootingStar.y > 100
+        ) shootingStar = null;
       }
 
       draw();
@@ -360,10 +434,10 @@
       ctx.fillRect(0,0,320,160);
 
       // --- Sol/Luna ---
-      if (sky === "dawn") drawSun(260, 20);
-      if (sky === "day") drawSun(260, 20);
-      if (sky === "sunset") drawSun(260, 30);
-      if (sky === "night") drawMoon(260, 20, 0.5);
+      if (sky === "dawn") drawSun(260, 28);
+      if (sky === "day") drawSun(260, 24);
+      if (sky === "sunset") drawSun(260, 38);
+      if (sky === "night") drawMoon(260, 24);
 
       // --- Nubes ---
       if (sky !== "night") clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s));
