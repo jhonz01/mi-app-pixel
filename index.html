@@ -27,12 +27,17 @@
       color: #fff;
       padding: 10px 18px;
       border-radius: 12px;
-      display: inline-block;
+      display: none;
       margin: 12px auto 8px auto;
       font-size: 4vw;
       box-shadow: 0 2px 8px #0006;
       min-width: 60vw;
       max-width: 90vw;
+      position: absolute;
+      left: 50%;
+      top: 20%;
+      transform: translateX(-50%);
+      z-index: 2;
     }
     #gameCanvas {
       display: block;
@@ -44,6 +49,8 @@
       max-height: 70vw;
       image-rendering: pixelated;
       border: 2px solid #333;
+      position: relative;
+      z-index: 1;
     }
     .controles {
       position: fixed;
@@ -87,11 +94,6 @@
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
   <div class="controles">
-    <button id="btnLeft">⬅️</button>
-    <button id="btnIdle">😴</button>
-    <button id="btnWalk">🚶</button>
-    <button id="btnRun">🏃</button>
-    <button id="btnRight">➡️</button>
     <button id="btnMensaje" title="Nuevo mensajito">💌</button>
   </div>
   <script>
@@ -132,10 +134,15 @@
       height: 32,
       frame: 0,
       frameCount: 4,
-      speed: 1.5,
-      action: "idle"
+      speed: 2,
+      action: "idle",
+      destino: 144,
+      caminando: false
     };
-    let keys = { left: false, right: false, action: "idle" };
+
+    // --- ANIMACIÓN DEL CORAZÓN ---
+    let mostrarCorazon = false;
+    let corazonAlpha = 0;
 
     // --- PAISAJE DINÁMICO ---
     function getSkyState() {
@@ -147,7 +154,6 @@
       return "night";
     }
 
-    // --- NUBES PIXELART ---
     function drawCloud(x, y, scale=1) {
       ctx.save();
       ctx.translate(x, y);
@@ -158,8 +164,6 @@
       ctx.fillRect(8, 4, 8, 6);
       ctx.restore();
     }
-
-    // --- LUNA PIXELART ---
     function drawMoon(x, y, phase=1) {
       ctx.save();
       ctx.translate(x, y);
@@ -172,8 +176,6 @@
       ctx.globalCompositeOperation = "source-over";
       ctx.restore();
     }
-
-    // --- SOL PIXELART ---
     function drawSun(x, y) {
       ctx.save();
       ctx.translate(x, y);
@@ -181,8 +183,6 @@
       ctx.fillRect(0, 0, 16, 16);
       ctx.restore();
     }
-
-    // --- FLORES PIXELART ---
     function drawFlower(x, y) {
       ctx.save();
       ctx.translate(x, y);
@@ -195,8 +195,6 @@
       ctx.fillRect(4, 4, 4, 4);
       ctx.restore();
     }
-
-    // --- CORAZONES PIXELART ---
     function drawHeart(x, y, scale=1) {
       ctx.save();
       ctx.translate(x, y);
@@ -207,8 +205,22 @@
       ctx.fillRect(2,6,4,4);
       ctx.restore();
     }
-
-    // --- ESTRELLAS PIXELART ---
+    function drawBigHeart(x, y, scale=4, alpha=1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#e63946";
+      ctx.fillRect(2,4,4,4);
+      ctx.fillRect(0,8,4,4);
+      ctx.fillRect(2,12,4,4);
+      ctx.fillRect(10,4,4,4);
+      ctx.fillRect(12,8,4,4);
+      ctx.fillRect(10,12,4,4);
+      ctx.fillRect(4,2,8,4);
+      ctx.fillRect(4,6,8,10);
+      ctx.restore();
+    }
     function drawStar(x, y, bright=1) {
       ctx.save();
       ctx.globalAlpha = bright;
@@ -216,8 +228,6 @@
       ctx.fillRect(x, y, 2, 2);
       ctx.restore();
     }
-
-    // --- ESTRELLA FUGAZ PIXELART ---
     function drawShootingStar(star) {
       ctx.save();
       ctx.globalAlpha = star.alpha;
@@ -225,14 +235,12 @@
       ctx.fillRect(star.x, star.y, 6, 2);
       ctx.fillStyle = "#ffe066";
       ctx.fillRect(star.x+4, star.y, 2, 2);
-      // cola
       ctx.globalAlpha = star.alpha * 0.5;
       ctx.fillStyle = "#fff";
       for(let i=1;i<=4;i++) ctx.fillRect(star.x-2*i, star.y, 2, 2);
       ctx.restore();
     }
 
-    // --- ESTADO DEL PAISAJE ---
     let clouds = [
       {x: 30, y: 18, s: 1.2, dx: 0.1},
       {x: 120, y: 10, s: 1, dx: 0.07},
@@ -244,48 +252,11 @@
     let hearts = Array.from({length: 6}, () => ({
       x: Math.random()*320, y: 160+Math.random()*30, s: 1+Math.random()*0.7, speed: 0.2+Math.random()*0.2
     }));
-
-    // --- ESTRELLAS ---
     let stars = Array.from({length: 30}, () => ({
       x: Math.random()*320, y: Math.random()*60, bright: Math.random()
     }));
-
-    // --- ESTRELLA FUGAZ ---
     let shootingStar = null;
     let lastShooting = 0;
-
-    // --- MENSAJE ALEATORIO ---
-    function nuevoMensaje() {
-      let msg = mensajes[Math.floor(Math.random()*mensajes.length)];
-      document.getElementById("mensaje").innerText = msg;
-      lanzarEstrellaFugaz();
-    }
-
-    // --- LANZAR ESTRELLA FUGAZ ---
-    function lanzarEstrellaFugaz() {
-      shootingStar = {
-        x: Math.random()*160+60,
-        y: Math.random()*40+10,
-        vx: -3-Math.random()*2,
-        vy: 1+Math.random()*1.5,
-        alpha: 1
-      };
-      lastShooting = Date.now();
-    }
-
-    // --- CONTROLES TÁCTILES ---
-    function addBtnEvents(btn, onDown, onUp) {
-      btn.onmousedown = onDown;
-      btn.onmouseup = onUp;
-      btn.ontouchstart = (e) => { e.preventDefault(); onDown(); };
-      btn.ontouchend = (e) => { e.preventDefault(); onUp(); };
-    }
-    addBtnEvents(document.getElementById("btnLeft"), () => { keys.left = true; }, () => { keys.left = false; });
-    addBtnEvents(document.getElementById("btnRight"), () => { keys.right = true; }, () => { keys.right = false; });
-    document.getElementById("btnIdle").onclick = () => { keys.action = "idle"; };
-    document.getElementById("btnWalk").onclick = () => { keys.action = "walk"; };
-    document.getElementById("btnRun").onclick = () => { keys.action = "run"; };
-    document.getElementById("btnMensaje").onclick = nuevoMensaje;
 
     // --- ANIMACIÓN PRINCIPAL ---
     let frameTimer = 0;
@@ -293,12 +264,32 @@
       frameTimer++;
       // --- Animación personaje ---
       if (frameTimer % 10 === 0) player.frame = (player.frame + 1) % player.frameCount;
-      // --- Movimiento personaje ---
-      let spd = player.speed * (keys.action === "run" ? 2 : keys.action === "walk" ? 1 : 0);
-      if (keys.left) player.x -= spd;
-      if (keys.right) player.x += spd;
-      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-      player.action = keys.action;
+
+      // --- Movimiento automático hacia el centro ---
+      if (player.caminando) {
+        player.action = "walk";
+        if (player.x < player.destino) {
+          player.x += player.speed;
+        } else {
+          player.x = player.destino;
+          player.action = "idle";
+          player.caminando = false;
+          mostrarCorazon = true;
+          corazonAlpha = 0;
+        }
+      }
+
+      // --- Animación del corazón grande ---
+      if (mostrarCorazon) {
+        corazonAlpha += 0.04;
+        if (corazonAlpha >= 1) {
+          corazonAlpha = 1;
+          setTimeout(() => {
+            mostrarCorazon = false;
+            mostrarMensaje();
+          }, 700);
+        }
+      }
 
       // --- Animar nubes ---
       clouds.forEach(cl => {
@@ -336,6 +327,20 @@
 
       draw();
       requestAnimationFrame(update);
+    }
+
+    // --- Mostrar mensaje ---
+    function mostrarMensaje() {
+      let msg = mensajes[Math.floor(Math.random()*mensajes.length)];
+      const mensajeDiv = document.getElementById("mensaje");
+      mensajeDiv.innerText = msg;
+      mensajeDiv.style.display = "block";
+      setTimeout(() => {
+        mensajeDiv.style.display = "none";
+        // Regresa el personaje a la izquierda para repetir animación
+        player.x = 40;
+        player.action = "idle";
+      }, 3000);
     }
 
     // --- DIBUJAR TODO ---
@@ -398,10 +403,36 @@
         player.frame * player.width, 0, player.width, player.height,
         player.x, player.y, player.width, player.height
       );
+
+      // --- Corazón grande al centro ---
+      if (mostrarCorazon) {
+        drawBigHeart(160, player.y - 20, 4, corazonAlpha);
+      }
     }
 
+    // --- LANZAR ESTRELLA FUGAZ ---
+    function lanzarEstrellaFugaz() {
+      shootingStar = {
+        x: Math.random()*160+60,
+        y: Math.random()*40+10,
+        vx: -3-Math.random()*2,
+        vy: 1+Math.random()*1.5,
+        alpha: 1
+      };
+      lastShooting = Date.now();
+    }
+
+    // --- Botón de mensaje: inicia animación automática ---
+    document.getElementById("btnMensaje").onclick = () => {
+      if (!player.caminando && !mostrarCorazon) {
+        player.x = 40;
+        player.action = "walk";
+        player.caminando = true;
+        document.getElementById("mensaje").style.display = "none";
+      }
+    };
+
     // --- INICIAR ---
-    document.getElementById("mensaje").onclick = nuevoMensaje;
     update();
   </script>
 </body>
