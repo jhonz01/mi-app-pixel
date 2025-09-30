@@ -128,7 +128,7 @@
 
     // --- PERSONAJE ---
     let player = {
-      x: 40,
+      x: 10,
       y: 80,
       width: 32,
       height: 32,
@@ -140,12 +140,8 @@
       caminando: false
     };
 
-    // --- ANIMACIÓN DEL CORAZÓN ---
-    let mostrarCorazon = false;
-    let corazonAlpha = 0;
-
-    // --- PAISAJE DINÁMICO ---
-    function getSkyState() {
+    // --- PAISAJE DINÁMICO Y ELEMENTOS ---
+    function getSkyState() { /* igual que tu código */ 
       const now = new Date();
       const h = now.getHours() + now.getMinutes()/60;
       if (h >= 5 && h < 7) return "dawn";
@@ -153,8 +149,7 @@
       if (h >= 17 && h < 19) return "sunset";
       return "night";
     }
-
-    function drawCloud(x, y, scale=1) {
+    function drawCloud(x, y, scale=1) { /* igual que tu código */ 
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(scale, scale);
@@ -164,7 +159,7 @@
       ctx.fillRect(8, 4, 8, 6);
       ctx.restore();
     }
-    function drawMoon(x, y, phase=1) {
+    function drawMoon(x, y, phase=1) { /* igual que tu código */
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#fffbe6";
@@ -176,14 +171,14 @@
       ctx.globalCompositeOperation = "source-over";
       ctx.restore();
     }
-    function drawSun(x, y) {
+    function drawSun(x, y) { /* igual que tu código */
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#ffe066";
       ctx.fillRect(0, 0, 16, 16);
       ctx.restore();
     }
-    function drawFlower(x, y) {
+    function drawFlower(x, y) { /* igual que tu código */
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = "#ff66a3";
@@ -195,7 +190,7 @@
       ctx.fillRect(4, 4, 4, 4);
       ctx.restore();
     }
-    function drawHeart(x, y, scale=1) {
+    function drawHeart(x, y, scale=1) { /* igual que tu código */
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(scale, scale);
@@ -205,30 +200,14 @@
       ctx.fillRect(2,6,4,4);
       ctx.restore();
     }
-    function drawBigHeart(x, y, scale=4, alpha=1) {
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.translate(x, y);
-      ctx.scale(scale, scale);
-      ctx.fillStyle = "#e63946";
-      ctx.fillRect(2,4,4,4);
-      ctx.fillRect(0,8,4,4);
-      ctx.fillRect(2,12,4,4);
-      ctx.fillRect(10,4,4,4);
-      ctx.fillRect(12,8,4,4);
-      ctx.fillRect(10,12,4,4);
-      ctx.fillRect(4,2,8,4);
-      ctx.fillRect(4,6,8,10);
-      ctx.restore();
-    }
-    function drawStar(x, y, bright=1) {
+    function drawStar(x, y, bright=1) { /* igual que tu código */
       ctx.save();
       ctx.globalAlpha = bright;
       ctx.fillStyle = "#fff";
       ctx.fillRect(x, y, 2, 2);
       ctx.restore();
     }
-    function drawShootingStar(star) {
+    function drawShootingStar(star) { /* igual que tu código */
       ctx.save();
       ctx.globalAlpha = star.alpha;
       ctx.fillStyle = "#fff";
@@ -274,20 +253,7 @@
           player.x = player.destino;
           player.action = "idle";
           player.caminando = false;
-          mostrarCorazon = true;
-          corazonAlpha = 0;
-        }
-      }
-
-      // --- Animación del corazón grande ---
-      if (mostrarCorazon) {
-        corazonAlpha += 0.04;
-        if (corazonAlpha >= 1) {
-          corazonAlpha = 1;
-          setTimeout(() => {
-            mostrarCorazon = false;
-            mostrarMensaje();
-          }, 700);
+          mostrarMensaje();
         }
       }
 
@@ -338,14 +304,14 @@
       setTimeout(() => {
         mensajeDiv.style.display = "none";
         // Regresa el personaje a la izquierda para repetir animación
-        player.x = 40;
+        player.x = 10;
         player.action = "idle";
       }, 3000);
     }
 
-    // --- DIBUJAR TODO ---
+    // --- DIBUJAR TODO --- (igual que tu código)
     function draw() {
-      // --- Fondo cielo según hora ---
+      // ...igual que tu código original...
       let sky = getSkyState();
       if (sky === "dawn") {
         let grad = ctx.createLinearGradient(0,0,0,160);
@@ -364,53 +330,38 @@
       }
       ctx.fillRect(0,0,320,160);
 
-      // --- Sol/Luna ---
       if (sky === "dawn") drawSun(260, 20);
       if (sky === "day") drawSun(260, 20);
       if (sky === "sunset") drawSun(260, 30);
       if (sky === "night") drawMoon(260, 20, 0.5);
 
-      // --- Nubes ---
       if (sky !== "night") clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s));
       else clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s*0.8));
 
-      // --- Estrellas ---
       if (sky === "sunset" || sky === "night") {
         stars.forEach(s => drawStar(s.x, s.y, s.bright));
       }
 
-      // --- Estrella fugaz ---
       if (shootingStar) drawShootingStar(shootingStar);
 
-      // --- Lago pixelart ---
       ctx.fillStyle = "#1e90ff";
       ctx.fillRect(0, 120, 320, 20);
 
-      // --- Césped pixelart ---
       ctx.fillStyle = "#3cb371";
       ctx.fillRect(0, 110, 320, 12);
 
-      // --- Flores pixelart ---
       flowers.forEach(f => drawFlower(f.x, f.y));
-
-      // --- Corazones flotando pixelart ---
       hearts.forEach(h => drawHeart(h.x, h.y, h.s));
 
-      // --- Personaje ---
       let sprite = sprites[player.action];
       ctx.drawImage(
         sprite,
         player.frame * player.width, 0, player.width, player.height,
         player.x, player.y, player.width, player.height
       );
-
-      // --- Corazón grande al centro ---
-      if (mostrarCorazon) {
-        drawBigHeart(160, player.y - 20, 4, corazonAlpha);
-      }
     }
 
-    // --- LANZAR ESTRELLA FUGAZ ---
+    // --- LANZAR ESTRELLA FUGAZ --- (igual que tu código)
     function lanzarEstrellaFugaz() {
       shootingStar = {
         x: Math.random()*160+60,
@@ -424,11 +375,10 @@
 
     // --- Botón de mensaje: inicia animación automática ---
     document.getElementById("btnMensaje").onclick = () => {
-      if (!player.caminando && !mostrarCorazon) {
-        player.x = 40;
+      if (!player.caminando) {
+        player.x = 10;
         player.action = "walk";
         player.caminando = true;
-        document.getElementById("mensaje").style.display = "none";
       }
     };
 
