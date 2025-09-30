@@ -1,37 +1,408 @@
-h1 {
-  margin: 10px 0;
-  font-size: 20px;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pa' ti mi cachetona 💖</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #222;
+      font-family: 'Press Start 2P', Arial, sans-serif;
+      text-align: center;
+      height: 100%;
+      width: 100vw;
+    }
+    h1 {
+      margin: 10px 0 0 0;
+      font-size: 5vw;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 2px;
+    }
+    #mensaje {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 12px;
+      display: inline-block;
+      margin: 12px auto 8px auto;
+      font-size: 4vw;
+      box-shadow: 0 2px 8px #0006;
+      min-width: 60vw;
+      max-width: 90vw;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+      background: #222;
+      width: 100vw;
+      max-width: 100vw;
+      height: 60vw;
+      max-height: 70vw;
+      image-rendering: pixelated;
+      border: 2px solid #333;
+    }
+    .controles {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+      width: 95vw;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .controles button {
+      background: #ff66a3;
+      border: 2px solid #fff;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 7vw;
+      box-shadow: 2px 2px 5px #0004;
+      color: #fff;
+      font-family: inherit;
+      min-width: 60px;
+      min-height: 60px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .controles button:active {
+      background: #ff3380;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 7vw; }
+      #mensaje { font-size: 5vw; }
+      #gameCanvas { height: 60vw; }
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  </style>
+</head>
+<body>
+  <h1>🎮 Pa' ti mi cachetona 💖</h1>
+  <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
+  <canvas id="gameCanvas" width="320" height="160"></canvas>
+  <div class="controles">
+    <button id="btnLeft">⬅️</button>
+    <button id="btnIdle">😴</button>
+    <button id="btnWalk">🚶</button>
+    <button id="btnRun">🏃</button>
+    <button id="btnRight">➡️</button>
+    <button id="btnMensaje" title="Nuevo mensajito">💌</button>
+  </div>
+  <script>
+    // --- CONFIGURACIÓN ---
+    const mensajes = [
+      "Pa’ ti mi cachetona hermosa 🌹",
+      "Te extraño mucho 💖",
+      "Eres mi persona favorita 😘",
+      "Siempre pienso en ti 🥰",
+      "¡Sonríe, mi amor! 😊",
+      "Tú eres mi cielo 🌈",
+      "¡Te amo infinito! 💞",
+      "Eres mi pixel preferido 🟪",
+      "Quiero abrazarte ya 🫂",
+      "¡Eres mi razón de sonreír! 😍"
+    ];
 
-#mensaje {
-  background: rgba(0,0,0,0.5);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 10px;
-  display: inline-block;
-  margin: 10px;
-}
+    // --- CANVAS ---
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
 
-#gameCanvas {
-  display: block;
-  margin: 0 auto;
-  background: transparent;
-}
+    // --- SPRITES (PERSONAJE) ---
+    const sprites = {
+      idle: new Image(),
+      walk: new Image(),
+      run: new Image()
+    };
+    sprites.idle.src = "sprites/idle.png";
+    sprites.walk.src = "sprites/walk.png";
+    sprites.run.src = "sprites/run.png";
 
-.controles {
-  position: fixed;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-}
+    // --- PERSONAJE ---
+    let player = {
+      x: 40,
+      y: 80,
+      width: 32,
+      height: 32,
+      frame: 0,
+      frameCount: 4,
+      speed: 1.5,
+      action: "idle"
+    };
+    let keys = { left: false, right: false, action: "idle" };
 
-.controles button {
-  background: #ff66a3;
-  border: none;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 20px;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-}
+    // --- PAISAJE DINÁMICO ---
+    function getSkyState() {
+      const now = new Date();
+      const h = now.getHours() + now.getMinutes()/60;
+      if (h >= 5 && h < 7) return "dawn";
+      if (h >= 7 && h < 17) return "day";
+      if (h >= 17 && h < 19) return "sunset";
+      return "night";
+    }
+
+    // --- NUBES PIXELART ---
+    function drawCloud(x, y, scale=1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, 16, 8);
+      ctx.fillRect(4, -4, 8, 8);
+      ctx.fillRect(8, 4, 8, 6);
+      ctx.restore();
+    }
+
+    // --- LUNA PIXELART ---
+    function drawMoon(x, y, phase=1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#fffbe6";
+      ctx.fillRect(0, 0, 16, 16);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(8 + 4*phase, 8, 8, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
+    }
+
+    // --- SOL PIXELART ---
+    function drawSun(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#ffe066";
+      ctx.fillRect(0, 0, 16, 16);
+      ctx.restore();
+    }
+
+    // --- FLORES PIXELART ---
+    function drawFlower(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#ff66a3";
+      ctx.fillRect(4, 0, 4, 4);
+      ctx.fillRect(0, 4, 4, 4);
+      ctx.fillRect(8, 4, 4, 4);
+      ctx.fillRect(4, 8, 4, 4);
+      ctx.fillStyle = "#fff700";
+      ctx.fillRect(4, 4, 4, 4);
+      ctx.restore();
+    }
+
+    // --- CORAZONES PIXELART ---
+    function drawHeart(x, y, scale=1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#ff66a3";
+      ctx.fillRect(2,0,4,4);
+      ctx.fillRect(0,2,8,4);
+      ctx.fillRect(2,6,4,4);
+      ctx.restore();
+    }
+
+    // --- ESTRELLAS PIXELART ---
+    function drawStar(x, y, bright=1) {
+      ctx.save();
+      ctx.globalAlpha = bright;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(x, y, 2, 2);
+      ctx.restore();
+    }
+
+    // --- ESTRELLA FUGAZ PIXELART ---
+    function drawShootingStar(star) {
+      ctx.save();
+      ctx.globalAlpha = star.alpha;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(star.x, star.y, 6, 2);
+      ctx.fillStyle = "#ffe066";
+      ctx.fillRect(star.x+4, star.y, 2, 2);
+      // cola
+      ctx.globalAlpha = star.alpha * 0.5;
+      ctx.fillStyle = "#fff";
+      for(let i=1;i<=4;i++) ctx.fillRect(star.x-2*i, star.y, 2, 2);
+      ctx.restore();
+    }
+
+    // --- ESTADO DEL PAISAJE ---
+    let clouds = [
+      {x: 30, y: 18, s: 1.2, dx: 0.1},
+      {x: 120, y: 10, s: 1, dx: 0.07},
+      {x: 220, y: 25, s: 0.8, dx: 0.05}
+    ];
+    let flowers = Array.from({length: 12}, (_,i) => ({
+      x: 10 + i*25 + Math.random()*10, y: 120 + Math.random()*10
+    }));
+    let hearts = Array.from({length: 6}, () => ({
+      x: Math.random()*320, y: 160+Math.random()*30, s: 1+Math.random()*0.7, speed: 0.2+Math.random()*0.2
+    }));
+
+    // --- ESTRELLAS ---
+    let stars = Array.from({length: 30}, () => ({
+      x: Math.random()*320, y: Math.random()*60, bright: Math.random()
+    }));
+
+    // --- ESTRELLA FUGAZ ---
+    let shootingStar = null;
+    let lastShooting = 0;
+
+    // --- MENSAJE ALEATORIO ---
+    function nuevoMensaje() {
+      let msg = mensajes[Math.floor(Math.random()*mensajes.length)];
+      document.getElementById("mensaje").innerText = msg;
+      lanzarEstrellaFugaz();
+    }
+
+    // --- LANZAR ESTRELLA FUGAZ ---
+    function lanzarEstrellaFugaz() {
+      shootingStar = {
+        x: Math.random()*160+60,
+        y: Math.random()*40+10,
+        vx: -3-Math.random()*2,
+        vy: 1+Math.random()*1.5,
+        alpha: 1
+      };
+      lastShooting = Date.now();
+    }
+
+    // --- CONTROLES TÁCTILES ---
+    function addBtnEvents(btn, onDown, onUp) {
+      btn.onmousedown = onDown;
+      btn.onmouseup = onUp;
+      btn.ontouchstart = (e) => { e.preventDefault(); onDown(); };
+      btn.ontouchend = (e) => { e.preventDefault(); onUp(); };
+    }
+    addBtnEvents(document.getElementById("btnLeft"), () => { keys.left = true; }, () => { keys.left = false; });
+    addBtnEvents(document.getElementById("btnRight"), () => { keys.right = true; }, () => { keys.right = false; });
+    document.getElementById("btnIdle").onclick = () => { keys.action = "idle"; };
+    document.getElementById("btnWalk").onclick = () => { keys.action = "walk"; };
+    document.getElementById("btnRun").onclick = () => { keys.action = "run"; };
+    document.getElementById("btnMensaje").onclick = nuevoMensaje;
+
+    // --- ANIMACIÓN PRINCIPAL ---
+    let frameTimer = 0;
+    function update() {
+      frameTimer++;
+      // --- Animación personaje ---
+      if (frameTimer % 10 === 0) player.frame = (player.frame + 1) % player.frameCount;
+      // --- Movimiento personaje ---
+      let spd = player.speed * (keys.action === "run" ? 2 : keys.action === "walk" ? 1 : 0);
+      if (keys.left) player.x -= spd;
+      if (keys.right) player.x += spd;
+      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+      player.action = keys.action;
+
+      // --- Animar nubes ---
+      clouds.forEach(cl => {
+        cl.x += cl.dx;
+        if (cl.x > 340) cl.x = -40;
+      });
+
+      // --- Animar corazones flotando ---
+      hearts.forEach(h => {
+        h.y -= h.speed;
+        if (h.y < -10) {
+          h.y = 160+Math.random()*30;
+          h.x = Math.random()*320;
+        }
+      });
+
+      // --- Animar estrellas titilando ---
+      if (getSkyState() === "sunset" || getSkyState() === "night") {
+        stars.forEach(s => {
+          s.bright += (Math.random()-0.5)*0.1;
+          s.bright = Math.max(0.3, Math.min(1, s.bright));
+        });
+      }
+
+      // --- Estrella fugaz automática cada 8s ---
+      if (!shootingStar && Date.now() - lastShooting > 8000) lanzarEstrellaFugaz();
+
+      // --- Animar estrella fugaz ---
+      if (shootingStar) {
+        shootingStar.x += shootingStar.vx;
+        shootingStar.y += shootingStar.vy;
+        shootingStar.alpha -= 0.025;
+        if (shootingStar.alpha <= 0 || shootingStar.x < -20 || shootingStar.y > 100) shootingStar = null;
+      }
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    // --- DIBUJAR TODO ---
+    function draw() {
+      // --- Fondo cielo según hora ---
+      let sky = getSkyState();
+      if (sky === "dawn") {
+        let grad = ctx.createLinearGradient(0,0,0,160);
+        grad.addColorStop(0, "#f9d29d");
+        grad.addColorStop(1, "#a1c4fd");
+        ctx.fillStyle = grad;
+      } else if (sky === "day") {
+        ctx.fillStyle = "#87ceeb";
+      } else if (sky === "sunset") {
+        let grad = ctx.createLinearGradient(0,0,0,160);
+        grad.addColorStop(0, "#fcb69f");
+        grad.addColorStop(1, "#a1c4fd");
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = "#232946";
+      }
+      ctx.fillRect(0,0,320,160);
+
+      // --- Sol/Luna ---
+      if (sky === "dawn") drawSun(260, 20);
+      if (sky === "day") drawSun(260, 20);
+      if (sky === "sunset") drawSun(260, 30);
+      if (sky === "night") drawMoon(260, 20, 0.5);
+
+      // --- Nubes ---
+      if (sky !== "night") clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s));
+      else clouds.forEach(cl => drawCloud(cl.x, cl.y, cl.s*0.8));
+
+      // --- Estrellas ---
+      if (sky === "sunset" || sky === "night") {
+        stars.forEach(s => drawStar(s.x, s.y, s.bright));
+      }
+
+      // --- Estrella fugaz ---
+      if (shootingStar) drawShootingStar(shootingStar);
+
+      // --- Lago pixelart ---
+      ctx.fillStyle = "#1e90ff";
+      ctx.fillRect(0, 120, 320, 20);
+
+      // --- Césped pixelart ---
+      ctx.fillStyle = "#3cb371";
+      ctx.fillRect(0, 110, 320, 12);
+
+      // --- Flores pixelart ---
+      flowers.forEach(f => drawFlower(f.x, f.y));
+
+      // --- Corazones flotando pixelart ---
+      hearts.forEach(h => drawHeart(h.x, h.y, h.s));
+
+      // --- Personaje ---
+      let sprite = sprites[player.action];
+      ctx.drawImage(
+        sprite,
+        player.frame * player.width, 0, player.width, player.height,
+        player.x, player.y, player.width, player.height
+      );
+    }
+
+    // --- INICIAR ---
+    document.getElementById("mensaje").onclick = nuevoMensaje;
+    update();
+  </script>
+</body>
+</html>
