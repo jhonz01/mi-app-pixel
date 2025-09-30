@@ -127,21 +127,19 @@
     // --- PERSONAJES ---
     let personajeElla = {
       x: 10,
-      y: 100,
+      y: 110,
       width: 32,
       height: 32,
       destino: 120,
-      speed: 2,
-      caminando: false
+      speed: 2
     };
     let personajeYo = {
       x: 278,
-      y: 100,
+      y: 110,
       width: 32,
       height: 32,
       destino: 160,
-      speed: 2,
-      caminando: false
+      speed: 2
     };
 
     // --- ANIMACIÓN DEL BESO ---
@@ -151,24 +149,46 @@
     let mensajeMostrado = false;
     let mensajeActual = mensajes[0];
 
-    // --- PAISAJE SIMPLE ---
+    // --- PAISAJE PIXELART ---
     function drawBackground() {
+      // Cielo
       ctx.fillStyle = "#87ceeb";
       ctx.fillRect(0,0,canvas.width,canvas.height);
       // Sol
       ctx.fillStyle = "#ffe066";
-      ctx.beginPath();
-      ctx.arc(280, 40, 24, 0, Math.PI*2);
-      ctx.fill();
+      ctx.fillRect(260, 20, 16, 16);
       // Nubes
+      ctx.save();
       ctx.fillStyle = "#fff";
       ctx.fillRect(40, 30, 40, 16);
       ctx.fillRect(90, 20, 32, 12);
       ctx.fillRect(200, 50, 36, 14);
+      ctx.restore();
+      // Lago
+      ctx.fillStyle = "#1e90ff";
+      ctx.fillRect(0, 120, 320, 20);
+      // Césped
+      ctx.fillStyle = "#3cb371";
+      ctx.fillRect(0, 110, 320, 12);
+      // Flores
+      for(let i=0; i<12; i++) {
+        let fx = 10 + i*25 + Math.random()*10;
+        let fy = 120 + Math.random()*10;
+        ctx.save();
+        ctx.translate(fx, fy);
+        ctx.fillStyle = "#ff66a3";
+        ctx.fillRect(4, 0, 4, 4);
+        ctx.fillRect(0, 4, 4, 4);
+        ctx.fillRect(8, 4, 4, 4);
+        ctx.fillRect(4, 8, 4, 4);
+        ctx.fillStyle = "#fff700";
+        ctx.fillRect(4, 4, 4, 4);
+        ctx.restore();
+      }
     }
 
     // --- CORAZÓN PIXELART GRANDE ---
-    function drawBigHeart(x, y, scale=3, alpha=1) {
+    function drawBigHeart(x, y, scale=4, alpha=1) {
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.translate(x, y);
@@ -218,11 +238,6 @@
           }, 700);
           corazonGrande = false;
         }
-      }
-
-      // --- Mostrar mensaje ---
-      if (animacion === "mensaje" && mensajeMostrado) {
-        // El mensaje ya está visible
       }
 
       requestAnimationFrame(update);
