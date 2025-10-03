@@ -125,6 +125,8 @@
     sprites.idle.src = "sprites/idle.png";
     sprites.walk.src = "sprites/walk.png";
 
+const sueloAltura = 50;
+
     let player = {
       x: 40,
       y: canvas.height - sueloAltura - 32,
@@ -166,7 +168,6 @@
     };
 
     // --- ESCENARIO ---
-    const sueloAltura = 50;
     let estrellas = Array.from({length: 50}, () => ({
       x: Math.random()*canvas.width,
       y: Math.random()*(canvas.height - sueloAltura),
