@@ -118,17 +118,22 @@
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
+    // Sprites de ambos
     const sprites = {
       idle: new Image(),
-      walk: new Image()
+      walk: new Image(),
+      ellaIdle: new Image(),
+      ellaWalk: new Image()
     };
-    sprites.idle.src = "sprites/idle.png";
-    sprites.walk.src = "sprites/walk.png";
+    sprites.idle.src = "sprites/idle.png";          // tu sprite quieto
+    sprites.walk.src = "sprites/walk.png";          // tu sprite caminando
+    sprites.ellaIdle.src = "sprites/ella_idle.png"; // sprite de ella quieta
+    sprites.ellaWalk.src = "sprites/ella_walk.png"; // sprite de ella caminando
 
-const sueloAltura = 50;
+    const sueloAltura = 40;
 
     let player = {
-      x: 40,
+      x: 0,
       y: canvas.height - sueloAltura - 32,
       width: 32,
       height: 32,
@@ -139,6 +144,21 @@ const sueloAltura = 50;
       autoWalk: false
     };
 
+    let ella = {
+      x: canvas.width - 32,
+      y: canvas.height - sueloAltura - 32,
+      width: 32,
+      height: 32,
+      frame: 0,
+      frameCount: 4,
+      speed: 1.5,
+      action: "idle",
+      autoWalk: false
+    };
+
+    // corazones pixelart
+    let corazones = [];
+
     function nuevoMensaje() {
       let msg = mensajes[Math.floor(Math.random()*mensajes.length)];
       document.getElementById("mensaje").innerText = msg;
@@ -148,8 +168,14 @@ const sueloAltura = 50;
     document.getElementById("mensaje").onclick = nuevoMensaje;
 
     document.getElementById("btnAutoWalk").onclick = () => {
-      player.autoWalk = true;
+      // reset posiciones
+      player.x = 0;
+      ella.x = canvas.width - ella.width;
       player.action = "walk";
+      ella.action = "walk";
+      player.autoWalk = true;
+      ella.autoWalk = true;
+      corazones = [];
     };
 
     const musica = document.getElementById("musica");
@@ -167,7 +193,7 @@ const sueloAltura = 50;
       voz.play();
     };
 
-    // --- ESCENARIO ---
+    // --- ESCENARIO --- (igual que antes)
     let estrellas = Array.from({length: 50}, () => ({
       x: Math.random()*canvas.width,
       y: Math.random()*(canvas.height - sueloAltura),
@@ -224,19 +250,46 @@ const sueloAltura = 50;
       ctx.fillRect(0,canvas.height - sueloAltura,canvas.width,sueloAltura);
     }
 
+    // --- animación ---
     let frameTimer = 0;
     function update() {
       frameTimer++;
-      if (frameTimer % 10 === 0) player.frame = (player.frame + 1) % player.frameCount;
+      if (frameTimer % 10 === 0){
+        player.frame = (player.frame + 1) % player.frameCount;
+        ella.frame = (ella.frame + 1) % ella.frameCount;
+      }
+
+      // movimiento hacia el centro
+      let centroX = (canvas.width - player.width)/2 - player.width/2;
+      let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
 
       if (player.autoWalk) {
-        let center = (canvas.width - player.width) / 2;
-        if (Math.abs(player.x - center) < 1) {
-          player.x = center;
-          player.autoWalk = false;
-          player.action = "idle";
+        if (player.x < centroX) {
+          player.x += player.speed;
         } else {
-          player.x += (player.x < center ? player.speed : -player.speed);
+          player.x = centroX;
+          player.action = "idle";
+        }
+      }
+
+      if (ella.autoWalk) {
+        if (ella.x > centroElla) {
+          ella.x -= ella.speed;
+        } else {
+          ella.x = centroElla;
+          ella.action = "idle";
+        }
+      }
+
+      // cuando ambos llegaron al centro: corazones
+      if (player.action==="idle" && ella.action==="idle" && corazones.length===0){
+        for (let i=0; i<10; i++){
+          corazones.push({
+            x: (player.x+ella.x)/2+player.width/2,
+            y: player.y,
+            vy: -1-Math.random()*1,
+            vida: 60+Math.random()*40
+          });
         }
       }
 
@@ -246,13 +299,40 @@ const sueloAltura = 50;
 
     function draw() {
       dibujarEscenario();
-      let sprite = sprites[player.action];
+
+      // personaje 1
+      let sprite1 = sprites[player.action];
       ctx.drawImage(
-        sprite,
+        sprite1,
         player.frame * player.width, 0, player.width, player.height,
         player.x, player.y, player.width, player.height
       );
+
+      // personaje 2 (invertido para que mire hacia él)
+      let sprite2 = sprites["ella"+capitalize(ella.action)];
+      ctx.save();
+      ctx.translate(ella.x + ella.width, ella.y);
+      ctx.scale(-1,1);
+      ctx.drawImage(
+        sprite2,
+        ella.frame * ella.width, 0, ella.width, ella.height,
+        0, 0, ella.width, ella.height
+      );
+      ctx.restore();
+
+      // corazones pixel
+      corazones.forEach(c=>{
+        ctx.fillStyle = 'pink';
+        ctx.fillRect(c.x,c.y,2,2);
+        ctx.fillRect(c.x-1,c.y+1,1,1);
+        ctx.fillRect(c.x+2,c.y+1,1,1);
+        c.y += c.vy;
+        c.vida--;
+      });
+      corazones = corazones.filter(c=>c.vida>0);
     }
+
+    function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
 
     update();
   </script>
