@@ -127,7 +127,7 @@
 
     let player = {
       x: 40,
-      y: 80,
+      y: canvas.height - sueloAltura - 32,
       width: 32,
       height: 32,
       frame: 0,
@@ -166,7 +166,7 @@
     };
 
     // --- ESCENARIO ---
-    const sueloAltura = 40;
+    const sueloAltura = 50;
     let estrellas = Array.from({length: 50}, () => ({
       x: Math.random()*canvas.width,
       y: Math.random()*(canvas.height - sueloAltura),
