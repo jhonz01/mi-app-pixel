@@ -22,17 +22,22 @@
       text-shadow: 2px 2px 0 #000;
       letter-spacing: 2px;
     }
+    /* mensaje AHORA FIXED ABAJO */
     #mensaje {
+      position: fixed;
+      bottom: 80px; /* distancia desde la parte inferior, ajústala a tu gusto */
+      left: 50%;
+      transform: translateX(-50%);
       background: rgba(0,0,0,0.7);
       color: #fff;
       padding: 10px 18px;
       border-radius: 12px;
       display: inline-block;
-      margin: 12px auto 8px auto;
       font-size: 4vw;
       box-shadow: 0 2px 8px #0006;
       min-width: 60vw;
       max-width: 90vw;
+      z-index: 9; /* queda por encima del canvas y debajo de botones */
     }
     #gameCanvas {
       display: block;
@@ -87,8 +92,9 @@
 </head>
 <body>
   <h1>Pa' ti mi cachetona 💖</h1>
-  <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
+  <!-- Mensaje movido aquí, debajo del canvas -->
+  <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <div class="controles">
     <button id="btnAutoWalk">MOVE</button>
     <button id="btnMusica">PLAY</button>
@@ -118,17 +124,16 @@
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
-    // Sprites de ambos
     const sprites = {
       idle: new Image(),
       walk: new Image(),
       ellaIdle: new Image(),
       ellaWalk: new Image()
     };
-    sprites.idle.src = "sprites/idle.png";          // tu sprite quieto
-    sprites.walk.src = "sprites/walk.png";          // tu sprite caminando
-    sprites.ellaIdle.src = "sprites/ella_idle.png"; // sprite de ella quieta
-    sprites.ellaWalk.src = "sprites/ella_walk.png"; // sprite de ella caminando
+    sprites.idle.src = "sprites/idle.png";
+    sprites.walk.src = "sprites/walk.png";
+    sprites.ellaIdle.src = "sprites/ella_idle.png";
+    sprites.ellaWalk.src = "sprites/ella_walk.png";
 
     const sueloAltura = 40;
 
@@ -156,7 +161,6 @@
       autoWalk: false
     };
 
-    // corazones pixelart
     let corazones = [];
 
     function nuevoMensaje() {
@@ -168,7 +172,6 @@
     document.getElementById("mensaje").onclick = nuevoMensaje;
 
     document.getElementById("btnAutoWalk").onclick = () => {
-      // reset posiciones
       player.x = 0;
       ella.x = canvas.width - ella.width;
       player.action = "walk";
@@ -193,7 +196,6 @@
       voz.play();
     };
 
-    // --- ESCENARIO --- (igual que antes)
     let estrellas = Array.from({length: 50}, () => ({
       x: Math.random()*canvas.width,
       y: Math.random()*(canvas.height - sueloAltura),
@@ -218,10 +220,10 @@
     function dibujarEscenario() {
       let hora = new Date().getHours();
       let colorCielo;
-      if (hora >= 5 && hora < 8) colorCielo = '#FFB36B'; // amanecer
-      else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB'; // día
-      else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E'; // atardecer
-      else colorCielo = '#0B0033'; // noche
+      if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
+      else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
+      else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
+      else colorCielo = '#0B0033';
 
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -250,7 +252,6 @@
       ctx.fillRect(0,canvas.height - sueloAltura,canvas.width,sueloAltura);
     }
 
-    // --- animación ---
     let frameTimer = 0;
     function update() {
       frameTimer++;
@@ -259,7 +260,6 @@
         ella.frame = (ella.frame + 1) % ella.frameCount;
       }
 
-      // movimiento hacia el centro
       let centroX = (canvas.width - player.width)/2 - player.width/2;
       let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
 
@@ -281,7 +281,6 @@
         }
       }
 
-      // cuando ambos llegaron al centro: corazones
       if (player.action==="idle" && ella.action==="idle" && corazones.length===0){
         for (let i=0; i<10; i++){
           corazones.push({
@@ -300,7 +299,6 @@
     function draw() {
       dibujarEscenario();
 
-      // personaje 1
       let sprite1 = sprites[player.action];
       ctx.drawImage(
         sprite1,
@@ -308,7 +306,6 @@
         player.x, player.y, player.width, player.height
       );
 
-      // personaje 2 (invertido para que mire hacia él)
       let sprite2 = sprites["ella"+capitalize(ella.action)];
       ctx.save();
       ctx.translate(ella.x + ella.width, ella.y);
@@ -320,7 +317,6 @@
       );
       ctx.restore();
 
-      // corazones pixel
       corazones.forEach(c=>{
         ctx.fillStyle = 'pink';
         ctx.fillRect(c.x,c.y,2,2);
