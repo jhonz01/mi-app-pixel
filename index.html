@@ -90,13 +90,9 @@
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
   <div class="controles">
-    <!-- Nuevo botón para caminar al centro -->
     <button id="btnAutoWalk">MOVE</button>
-    <!-- Botón música -->
     <button id="btnMusica">PLAY</button>
-    <!-- Botón voz -->
     <button id="btnVoz">VOICE</button>
-    <!-- Botón mensaje -->
     <button id="btnMensaje">MSG</button>
   </div>
 
@@ -147,6 +143,7 @@
     }
 
     document.getElementById("btnMensaje").onclick = nuevoMensaje;
+    document.getElementById("mensaje").onclick = nuevoMensaje;
 
     document.getElementById("btnAutoWalk").onclick = () => {
       player.autoWalk = true;
@@ -167,6 +164,64 @@
       voz.currentTime = 0;
       voz.play();
     };
+
+    // --- ESCENARIO ---
+    const sueloAltura = 40;
+    let estrellas = Array.from({length: 50}, () => ({
+      x: Math.random()*canvas.width,
+      y: Math.random()*(canvas.height - sueloAltura),
+      brillo: Math.random()
+    }));
+    let fugaces = [];
+
+    function generarFugaces() {
+      let cantidad = Math.floor(Math.random()*4);
+      for (let i=0; i<cantidad; i++) {
+        fugaces.push({
+          x: Math.random()*canvas.width,
+          y: Math.random()*canvas.height/2,
+          vx: -2 - Math.random()*2,
+          vy: 1 + Math.random()*1,
+          vida: 50 + Math.random()*50
+        });
+      }
+    }
+    setInterval(generarFugaces, 8000);
+
+    function dibujarEscenario() {
+      let hora = new Date().getHours();
+      let colorCielo;
+      if (hora >= 5 && hora < 8) colorCielo = '#FFB36B'; // amanecer
+      else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB'; // día
+      else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E'; // atardecer
+      else colorCielo = '#0B0033'; // noche
+
+      ctx.fillStyle = colorCielo;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      if (hora >= 19 || hora < 5) {
+        estrellas.forEach(e=>{
+          e.brillo += (Math.random()-0.5)*0.1;
+          e.brillo = Math.max(0.2, Math.min(1, e.brillo));
+          ctx.fillStyle = `rgba(255,255,255,${e.brillo})`;
+          ctx.fillRect(Math.floor(e.x), Math.floor(e.y), 1, 1);
+        });
+        fugaces.forEach(f=>{
+          ctx.strokeStyle = 'white';
+          ctx.beginPath();
+          ctx.moveTo(f.x,f.y);
+          ctx.lineTo(f.x+5,f.y-2);
+          ctx.stroke();
+          f.x += f.vx;
+          f.y += f.vy;
+          f.vida--;
+        });
+        fugaces = fugaces.filter(f=>f.vida>0);
+      }
+
+      ctx.fillStyle = '#228B22';
+      ctx.fillRect(0,canvas.height - sueloAltura,canvas.width,sueloAltura);
+    }
 
     let frameTimer = 0;
     function update() {
@@ -189,8 +244,7 @@
     }
 
     function draw() {
-      ctx.fillStyle = "#87ceeb";
-      ctx.fillRect(0,0,320,160);
+      dibujarEscenario();
       let sprite = sprites[player.action];
       ctx.drawImage(
         sprite,
@@ -199,7 +253,6 @@
       );
     }
 
-    document.getElementById("mensaje").onclick = nuevoMensaje;
     update();
   </script>
 </body>
