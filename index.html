@@ -22,10 +22,9 @@
       text-shadow: 2px 2px 0 #000;
       letter-spacing: 2px;
     }
-    /* mensaje AHORA FIXED ABAJO */
     #mensaje {
       position: fixed;
-      bottom: 80px; /* distancia desde la parte inferior, ajústala a tu gusto */
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0,0,0,0.7);
@@ -37,7 +36,7 @@
       box-shadow: 0 2px 8px #0006;
       min-width: 60vw;
       max-width: 90vw;
-      z-index: 9; /* queda por encima del canvas y debajo de botones */
+      z-index: 9;
     }
     #gameCanvas {
       display: block;
@@ -93,7 +92,6 @@
 <body>
   <h1>Pa' ti mi cachetona 💖</h1>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
-  <!-- Mensaje movido aquí, debajo del canvas -->
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <div class="controles">
     <button id="btnAutoWalk">MOVE</button>
@@ -102,21 +100,14 @@
     <button id="btnMensaje">MSG</button>
   </div>
 
-  <!-- Audios -->
   <audio id="musica" src="musica.mp3"></audio>
   <audio id="voz" src="mi_voz.mp3"></audio>
 
   <script>
     const mensajes = [
-      "Pa’ ti mi cachetona hermosa 🌹",
-      "Te extraño mucho 💖",
-      "Eres mi persona favorita 😘",
-      "Siempre pienso en ti 🥰",
-      "¡Sonríe, mi amor! 😊",
-      "Tú eres mi cielo 🌈",
-      "¡Te amo infinito! 💞",
-      "Eres mi pixel preferido 🟪",
-      "Quiero abrazarte ya 🫂",
+      "Pa’ ti mi cachetona hermosa 🌹","Te extraño mucho 💖","Eres mi persona favorita 😘",
+      "Siempre pienso en ti 🥰","¡Sonríe, mi amor! 😊","Tú eres mi cielo 🌈",
+      "¡Te amo infinito! 💞","Eres mi pixel preferido 🟪","Quiero abrazarte ya 🫂",
       "¡Eres mi razón de sonreír! 😍"
     ];
 
@@ -125,10 +116,8 @@
     ctx.imageSmoothingEnabled = false;
 
     const sprites = {
-      idle: new Image(),
-      walk: new Image(),
-      ellaIdle: new Image(),
-      ellaWalk: new Image()
+      idle: new Image(), walk: new Image(),
+      ellaIdle: new Image(), ellaWalk: new Image()
     };
     sprites.idle.src = "sprites/idle.png";
     sprites.walk.src = "sprites/walk.png";
@@ -137,199 +126,219 @@
 
     const sueloAltura = 40;
 
-    let player = {
-      x: 0,
-      y: canvas.height - sueloAltura - 32,
-      width: 32,
-      height: 32,
-      frame: 0,
-      frameCount: 4,
-      speed: 1.5,
-      action: "idle",
-      autoWalk: false
-    };
-
-    let ella = {
-      x: canvas.width - 32,
-      y: canvas.height - sueloAltura - 32,
-      width: 32,
-      height: 32,
-      frame: 0,
-      frameCount: 4,
-      speed: 1.5,
-      action: "idle",
-      autoWalk: false
-    };
-
+    let player = {x:0,y:canvas.height - sueloAltura - 32,width:32,height:32,
+      frame:0,frameCount:4,speed:1.5,action:"idle",autoWalk:false};
+    let ella = {x:canvas.width - 32,y:canvas.height - sueloAltura - 32,width:32,height:32,
+      frame:0,frameCount:4,speed:1.5,action:"idle",autoWalk:false};
     let corazones = [];
 
-    function nuevoMensaje() {
+    document.getElementById("btnMensaje").onclick = nuevoMensaje;
+    document.getElementById("mensaje").onclick = nuevoMensaje;
+    function nuevoMensaje(){
       let msg = mensajes[Math.floor(Math.random()*mensajes.length)];
       document.getElementById("mensaje").innerText = msg;
     }
 
-    document.getElementById("btnMensaje").onclick = nuevoMensaje;
-    document.getElementById("mensaje").onclick = nuevoMensaje;
-
-    document.getElementById("btnAutoWalk").onclick = () => {
-      player.x = 0;
-      ella.x = canvas.width - ella.width;
-      player.action = "walk";
-      ella.action = "walk";
-      player.autoWalk = true;
-      ella.autoWalk = true;
-      corazones = [];
+    document.getElementById("btnAutoWalk").onclick = ()=>{
+      player.x=0; ella.x=canvas.width - ella.width;
+      player.action="walk"; ella.action="walk";
+      player.autoWalk=true; ella.autoWalk=true; corazones=[];
     };
 
     const musica = document.getElementById("musica");
-    document.getElementById("btnMusica").onclick = () => {
-      if (musica.paused) {
-        musica.play();
-      } else {
-        musica.pause();
-      }
+    document.getElementById("btnMusica").onclick = ()=>{
+      if(musica.paused){musica.play();} else {musica.pause();}
     };
 
     const voz = document.getElementById("voz");
-    document.getElementById("btnVoz").onclick = () => {
-      voz.currentTime = 0;
-      voz.play();
+    document.getElementById("btnVoz").onclick = ()=>{
+      voz.currentTime=0; voz.play();
     };
 
-    let estrellas = Array.from({length: 50}, () => ({
-      x: Math.random()*canvas.width,
-      y: Math.random()*(canvas.height - sueloAltura),
-      brillo: Math.random()
+    let estrellas = Array.from({length:50},()=>({
+      x:Math.random()*canvas.width,
+      y:Math.random()*(canvas.height - sueloAltura),
+      brillo:Math.random()
     }));
     let fugaces = [];
-
-    function generarFugaces() {
-      let cantidad = Math.floor(Math.random()*4);
-      for (let i=0; i<cantidad; i++) {
+    function generarFugaces(){
+      let cantidad=Math.floor(Math.random()*4);
+      for(let i=0;i<cantidad;i++){
         fugaces.push({
-          x: Math.random()*canvas.width,
-          y: Math.random()*canvas.height/2,
-          vx: -2 - Math.random()*2,
-          vy: 1 + Math.random()*1,
-          vida: 50 + Math.random()*50
+          x:Math.random()*canvas.width,
+          y:Math.random()*canvas.height/2,
+          vx:-2 - Math.random()*2,
+          vy:1+Math.random()*1,
+          vida:50+Math.random()*50
         });
       }
     }
-    setInterval(generarFugaces, 8000);
+    setInterval(generarFugaces,8000);
 
-    function dibujarEscenario() {
-      let hora = new Date().getHours();
+    // nubes
+    let nubes = Array.from({length:5},()=>({
+      x:Math.random()*canvas.width,
+      y:Math.random()*40+10,
+      ancho:20+Math.random()*20,
+      alto:6+Math.random()*4,
+      speed:0.2+Math.random()*0.2
+    }));
+
+    function getMoonPhaseFraction(date){
+      let year=date.getFullYear();
+      let month=date.getMonth()+1;
+      let day=date.getDate();
+      if(month<3){year--;month+=12;}
+      ++month;
+      const c=365.25*year;
+      const e=30.6*month;
+      const jd=c+e+day-694039.09;
+      const jdn=jd/29.5305882;
+      let b=parseInt(jdn);
+      let frac=jdn-b;
+      let phase=Math.round(frac*8);
+      if(phase>=8)phase=0;
+      return phase/8;
+    }
+
+    function dibujarEscenario(){
+      let hora=new Date().getHours();
       let colorCielo;
-      if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
-      else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
-      else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
-      else colorCielo = '#0B0033';
-
-      ctx.fillStyle = colorCielo;
+      if(hora>=5 && hora<8) colorCielo='#FFB36B';
+      else if(hora>=8 && hora<17) colorCielo='#87CEEB';
+      else if(hora>=17 && hora<19) colorCielo='#FF7E5E';
+      else colorCielo='#0B0033';
+      ctx.fillStyle=colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      if (hora >= 19 || hora < 5) {
+      // estrellas y fugaces de noche
+      if(hora>=19 || hora<5){
         estrellas.forEach(e=>{
-          e.brillo += (Math.random()-0.5)*0.1;
-          e.brillo = Math.max(0.2, Math.min(1, e.brillo));
-          ctx.fillStyle = `rgba(255,255,255,${e.brillo})`;
-          ctx.fillRect(Math.floor(e.x), Math.floor(e.y), 1, 1);
+          e.brillo+=(Math.random()-0.5)*0.1;
+          e.brillo=Math.max(0.2,Math.min(1,e.brillo));
+          ctx.fillStyle=`rgba(255,255,255,${e.brillo})`;
+          ctx.fillRect(Math.floor(e.x),Math.floor(e.y),1,1);
         });
         fugaces.forEach(f=>{
-          ctx.strokeStyle = 'white';
+          ctx.strokeStyle='white';
           ctx.beginPath();
           ctx.moveTo(f.x,f.y);
           ctx.lineTo(f.x+5,f.y-2);
           ctx.stroke();
-          f.x += f.vx;
-          f.y += f.vy;
-          f.vida--;
+          f.x+=f.vx;f.y+=f.vy;f.vida--;
         });
-        fugaces = fugaces.filter(f=>f.vida>0);
+        fugaces=fugaces.filter(f=>f.vida>0);
       }
 
-      ctx.fillStyle = '#228B22';
+      // nubes pixel art
+      nubes.forEach(n=>{
+        let nubeColor = '#FFFFFF';
+        if(hora<8) nubeColor='#FFDDCC';
+        else if(hora>=17 && hora<19) nubeColor='#FFAA88';
+        else if(hora>=19||hora<5) nubeColor='#555577';
+        ctx.fillStyle=nubeColor;
+        for(let i=0;i<n.ancho;i+=4){
+          ctx.fillRect(Math.floor(n.x+i),Math.floor(n.y),4,n.alto);
+        }
+        n.x+=n.speed;
+        if(n.x>canvas.width+30){n.x=-50;}
+      });
+
+      // sol pixel art
+      let sunX = (hora-6)/12 * canvas.width; 
+      let sunY = Math.sin((hora/24)*Math.PI)*40 + 20;
+      if(hora>=6 && hora<=18){
+        ctx.fillStyle='#FFD700';
+        for(let i=0;i<10;i++){
+          ctx.fillRect(Math.floor(sunX+i),Math.floor(sunY),10,10);
+        }
+      }
+
+      // luna pixel art con fase
+      if(hora>=19 || hora<6){
+        let phaseFrac=getMoonPhaseFraction(new Date());
+        let moonX=canvas.width - (hora/24)*canvas.width;
+        let moonY=Math.sin((hora/24)*Math.PI)*40+20;
+        const moonSize=8;
+        // base clara
+        ctx.fillStyle='#F0F0F0';
+        ctx.fillRect(Math.floor(moonX),Math.floor(moonY),moonSize,moonSize);
+        // sombra según fase
+        ctx.save();
+        ctx.beginPath();
+        if(phaseFrac<0.5){
+          const illum=phaseFrac*2;
+          const cut=moonSize*(1-illum);
+          ctx.rect(Math.floor(moonX),Math.floor(moonY),cut,moonSize);
+        }else{
+          const illum=(1-phaseFrac)*2;
+          const cut=moonSize*(1-illum);
+          ctx.rect(Math.floor(moonX+moonSize-cut),Math.floor(moonY),cut,moonSize);
+        }
+        ctx.clip();
+        ctx.fillStyle=colorCielo;
+        ctx.fillRect(Math.floor(moonX),Math.floor(moonY),moonSize,moonSize);
+        ctx.restore();
+      }
+
+      // suelo
+      ctx.fillStyle='#228B22';
       ctx.fillRect(0,canvas.height - sueloAltura,canvas.width,sueloAltura);
     }
 
-    let frameTimer = 0;
-    function update() {
+    let frameTimer=0;
+    function update(){
       frameTimer++;
-      if (frameTimer % 10 === 0){
-        player.frame = (player.frame + 1) % player.frameCount;
-        ella.frame = (ella.frame + 1) % ella.frameCount;
+      if(frameTimer%10===0){
+        player.frame=(player.frame+1)%player.frameCount;
+        ella.frame=(ella.frame+1)%ella.frameCount;
       }
+      let centroX=(canvas.width - player.width)/2 - player.width/2;
+      let centroElla=(canvas.width - ella.width)/2 + ella.width/2;
 
-      let centroX = (canvas.width - player.width)/2 - player.width/2;
-      let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
-
-      if (player.autoWalk) {
-        if (player.x < centroX) {
-          player.x += player.speed;
-        } else {
-          player.x = centroX;
-          player.action = "idle";
-        }
+      if(player.autoWalk){
+        if(player.x<centroX){player.x+=player.speed;}
+        else{player.x=centroX;player.action="idle";}
       }
-
-      if (ella.autoWalk) {
-        if (ella.x > centroElla) {
-          ella.x -= ella.speed;
-        } else {
-          ella.x = centroElla;
-          ella.action = "idle";
-        }
+      if(ella.autoWalk){
+        if(ella.x>centroElla){ella.x-=ella.speed;}
+        else{ella.x=centroElla;ella.action="idle";}
       }
-
-      if (player.action==="idle" && ella.action==="idle" && corazones.length===0){
-        for (let i=0; i<10; i++){
+      if(player.action==="idle" && ella.action==="idle" && corazones.length===0){
+        for(let i=0;i<10;i++){
           corazones.push({
-            x: (player.x+ella.x)/2+player.width/2,
-            y: player.y,
-            vy: -1-Math.random()*1,
-            vida: 60+Math.random()*40
+            x:(player.x+ella.x)/2+player.width/2,
+            y:player.y,vy:-1-Math.random()*1,
+            vida:60+Math.random()*40
           });
         }
       }
-
       draw();
       requestAnimationFrame(update);
     }
 
-    function draw() {
+    function draw(){
       dibujarEscenario();
-
-      let sprite1 = sprites[player.action];
-      ctx.drawImage(
-        sprite1,
-        player.frame * player.width, 0, player.width, player.height,
-        player.x, player.y, player.width, player.height
-      );
-
-      let sprite2 = sprites["ella"+capitalize(ella.action)];
+      let sprite1=sprites[player.action];
+      ctx.drawImage(sprite1,player.frame*player.width,0,player.width,player.height,
+        player.x,player.y,player.width,player.height);
+      let sprite2=sprites["ella"+capitalize(ella.action)];
       ctx.save();
-      ctx.translate(ella.x + ella.width, ella.y);
+      ctx.translate(ella.x+ella.width,ella.y);
       ctx.scale(-1,1);
-      ctx.drawImage(
-        sprite2,
-        ella.frame * ella.width, 0, ella.width, ella.height,
-        0, 0, ella.width, ella.height
-      );
+      ctx.drawImage(sprite2,ella.frame*ella.width,0,ella.width,ella.height,0,0,ella.width,ella.height);
       ctx.restore();
-
       corazones.forEach(c=>{
-        ctx.fillStyle = 'pink';
+        ctx.fillStyle='pink';
         ctx.fillRect(c.x,c.y,2,2);
         ctx.fillRect(c.x-1,c.y+1,1,1);
         ctx.fillRect(c.x+2,c.y+1,1,1);
-        c.y += c.vy;
-        c.vida--;
+        c.y+=c.vy;c.vida--;
       });
-      corazones = corazones.filter(c=>c.vida>0);
+      corazones=corazones.filter(c=>c.vida>0);
     }
 
-    function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
-
+    function capitalize(str){return str.charAt(0).toUpperCase()+str.slice(1);}
     update();
   </script>
 </body>
