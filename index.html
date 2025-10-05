@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Para mi cachetona ❤️</title>
   <style>
     body {
@@ -11,13 +12,26 @@
       align-items: center;
       font-family: monospace;
       color: white;
+      margin: 0;
+    }
+    h1 {
+      font-size: 1.2rem;
+      margin: 10px 0;
     }
     canvas {
+      width: 100vw;          /* que ocupe todo el ancho del móvil */
+      height: auto;          /* mantiene proporción */
       border: 2px solid #fff;
       image-rendering: pixelated;
     }
     #mensaje {
       margin: 10px;
+      text-align: center;
+    }
+    button {
+      margin: 5px;
+      padding: 5px 10px;
+      font-size: 1rem;
     }
   </style>
 </head>
@@ -40,7 +54,7 @@
   <audio id="musica" src="musica.mp3" loop></audio>
   <audio id="voz" src="voz.mp3"></audio>
 
-  <!-- tu script va al final del body -->
+  <!-- script -->
   <script>
     const mensajes = [
       "Pa’ ti mi cachetona hermosa 🌹",
