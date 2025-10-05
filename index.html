@@ -171,12 +171,12 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas y tamaños
+    // nubes lentas y tamaños (ajustado)
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
       size: 10 + Math.random()*15,
-      speed: 0.05 + Math.random()*0.05
+      speed: 0.02 + Math.random()*0.02  // 👈 velocidad media-lenta
     }));
 
     // función para fases lunares
