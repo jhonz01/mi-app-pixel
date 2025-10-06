@@ -22,8 +22,8 @@
       color: #fff;
       text-shadow: 2px 2px 0 #000;
       letter-spacing: 2px;
-      position: relative;
       z-index: 10;
+      position: relative;
     }
 
     #mensaje {
@@ -40,10 +40,10 @@
       box-shadow: 0 2px 8px #0006;
       min-width: 60vw;
       max-width: 90vw;
-      z-index: 9;
+      z-index: 10;
     }
 
-    /* 🎮 Pantalla tipo consola retro centrada */
+    /* 🕹️ Pantalla centrada tipo videojuego */
     #gameCanvas {
       position: fixed;
       top: 50%;
@@ -153,6 +153,7 @@
     let ella = { x: canvas.width - 32, y: canvas.height - sueloAltura - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
     let corazones = [];
+
     function nuevoMensaje() {
       document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
     }
@@ -174,7 +175,7 @@
     const voz = document.getElementById("voz");
     document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
 
-    // estrellas
+    // Estrellas y cielo
     let estrellas = Array.from({length: 50}, () => ({x: Math.random()*canvas.width,y: Math.random()*(canvas.height - sueloAltura),brillo: Math.random()}));
     let fugaces = [];
 
@@ -186,7 +187,6 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
@@ -194,7 +194,6 @@
       speed: 0.02 + Math.random()*0.02
     }));
 
-    // fase lunar
     function getMoonPhaseFraction() {
       const now = new Date();
       const year = now.getFullYear();
@@ -203,8 +202,6 @@
       const c = 29.530588853;
       const j = (year-2000)*12.3685 + month;
       const i = j|0;
-      const k = i/1236.85;
-      const t = k*k;
       const n = day + (year-2000)*365.25 + month*30.6;
       const phase = (n%c)/c;
       return phase;
@@ -220,7 +217,7 @@
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // estrellas
+      // Estrellas
       if (hora >= 19 || hora < 5) {
         estrellas.forEach(e=>{
           e.brillo += (Math.random()-0.5)*0.1;
@@ -239,17 +236,14 @@
         fugaces = fugaces.filter(f=>f.vida>0);
       }
 
-      // sol
+      // Sol y luna
       if (hora>=6 && hora<19){
         let sunProgress = (hora-6)/13;
         let sunX = sunProgress*canvas.width;
         let sunY = 40 - Math.sin(sunProgress*Math.PI)*30;
         ctx.fillStyle = '#FFD700';
         ctx.fillRect(sunX, sunY, 16,16);
-      }
-
-      // luna
-      if (hora>=19 || hora<6){
+      } else {
         let moonProgress = (hora>=19? (hora-19)/11 : (hora+5)/11);
         let moonX = canvas.width - moonProgress*canvas.width;
         let moonY = 40 - Math.sin(moonProgress*Math.PI)*30;
@@ -260,7 +254,6 @@
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -269,10 +262,38 @@
         if (cl.x>canvas.width) cl.x=-cl.size;
       });
 
-      ctx.fillStyle = '#228B22';
-      ctx.fillRect(0,canvas.height - sueloAltura,canvas.width,sueloAltura);
+      // 🌿 Suelo animado con flores
+      const sueloY = canvas.height - sueloAltura;
+      for (let y = 0; y < sueloAltura; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          let colorBase = y < 10
+            ? (Math.random() < 0.1 ? '#3b8a3b' : '#2e7031')
+            : (Math.random() < 0.1 ? '#5a3820' : '#4a2e17');
+          ctx.fillStyle = colorBase;
+          ctx.fillRect(x, sueloY + y, 1, 1);
+        }
+      }
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fillRect(0, sueloY, canvas.width, 3);
+      const tiempo = Date.now() * 0.002;
+      for (let i = 0; i < canvas.width; i++) {
+        let offset = Math.sin(i * 0.1 + tiempo) * 1.5;
+        let tono = Math.random() < 0.5 ? '#3fa34d' : '#2f913f';
+        ctx.fillStyle = tono;
+        ctx.fillRect(i, sueloY - 2 - offset, 1, 2);
+      }
+      for (let i = 0; i < canvas.width; i += 10) {
+        if (Math.random() < 0.04) {
+          const flowerColors = ['#ff4f8b', '#ffd93b', '#8b5cf6', '#ff8c00'];
+          const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+          const sway = Math.sin(tiempo + i * 0.5) * 1;
+          ctx.fillStyle = color;
+          ctx.fillRect(i + sway, sueloY - 6 - Math.random()*2, 1, 1);
+        }
+      }
     }
 
+    // --- Animaciones del juego ---
     let frameTimer = 0;
     function update() {
       frameTimer++;
@@ -317,7 +338,6 @@
       });
       corazones = corazones.filter(c=>c.vida>0);
     }
-
     function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
     update();
   </script>
