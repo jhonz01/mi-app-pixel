@@ -91,7 +91,8 @@
 </head>
 <body>
   <h1>Pa' ti mi cachetona 💖</h1>
-  <canvas id="gameCanvas" width="320" height="160"></canvas>
+  <!-- canvas ahora con más resolución interna -->
+  <canvas id="gameCanvas" width="640" height="320"></canvas>
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
   <div class="controles">
     <button id="btnAutoWalk">MOVE</button>
@@ -121,6 +122,9 @@
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
+    // factor de escala para dibujar
+    const scale = 2;
+
     const sprites = {
       idle: new Image(),
       walk: new Image(),
@@ -134,8 +138,28 @@
 
     const sueloAltura = 40;
 
-    let player = { x: 0, y: canvas.height - sueloAltura - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
-    let ella = { x: canvas.width - 32, y: canvas.height - sueloAltura - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
+    let player = {
+      x: 0,
+      y: canvas.height - sueloAltura - 32*scale,
+      width: 32,
+      height: 32,
+      frame: 0,
+      frameCount: 4,
+      speed: 1.5,
+      action: "idle",
+      autoWalk: false
+    };
+    let ella = {
+      x: canvas.width - 32*scale,
+      y: canvas.height - sueloAltura - 32*scale,
+      width: 32,
+      height: 32,
+      frame: 0,
+      frameCount: 4,
+      speed: 1.5,
+      action: "idle",
+      autoWalk: false
+    };
 
     let corazones = [];
     function nuevoMensaje() {
@@ -146,7 +170,7 @@
 
     document.getElementById("btnAutoWalk").onclick = () => {
       player.x = 0;
-      ella.x = canvas.width - ella.width;
+      ella.x = canvas.width - ella.width*scale;
       player.action = "walk";
       ella.action = "walk";
       player.autoWalk = true;
@@ -171,15 +195,14 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas y tamaños (ajustado)
+    // nubes
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
       size: 10 + Math.random()*15,
-      speed: 0.02 + Math.random()*0.02  // 👈 velocidad media-lenta
+      speed: 0.02 + Math.random()*0.02
     }));
 
-    // función para fases lunares
     function getMoonPhaseFraction() {
       const now = new Date();
       const year = now.getFullYear();
@@ -205,7 +228,6 @@
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // estrellas
       if (hora >= 19 || hora < 5) {
         estrellas.forEach(e=>{
           e.brillo += (Math.random()-0.5)*0.1;
@@ -224,30 +246,25 @@
         fugaces = fugaces.filter(f=>f.vida>0);
       }
 
-      // sol
       if (hora>=6 && hora<19){
-        let sunProgress = (hora-6)/13; // 0 a 1
+        let sunProgress = (hora-6)/13;
         let sunX = sunProgress*canvas.width;
         let sunY = 40 - Math.sin(sunProgress*Math.PI)*30;
         ctx.fillStyle = '#FFD700';
-        ctx.fillRect(sunX, sunY, 16,16); // cuadrado pixelado
+        ctx.fillRect(sunX, sunY, 16,16);
       }
 
-      // luna
       if (hora>=19 || hora<6){
         let moonProgress = (hora>=19? (hora-19)/11 : (hora+5)/11);
         let moonX = canvas.width - moonProgress*canvas.width;
         let moonY = 40 - Math.sin(moonProgress*Math.PI)*30;
         let phase = getMoonPhaseFraction();
-        // fondo oscuro de la luna
         ctx.fillStyle = '#CCCCCC';
         ctx.fillRect(moonX, moonY, 16,16);
-        // recorte fase lunar
         ctx.fillStyle = colorCielo;
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes pixel art lentas
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -267,8 +284,8 @@
         player.frame = (player.frame + 1) % player.frameCount;
         ella.frame = (ella.frame + 1) % ella.frameCount;
       }
-      let centroX = (canvas.width - player.width)/2 - player.width/2;
-      let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
+      let centroX = (canvas.width - player.width*scale)/2 - player.width/2;
+      let centroElla = (canvas.width - ella.width*scale)/2 + ella.width/2;
       if (player.autoWalk) {
         if (player.x < centroX) player.x += player.speed; else {player.x = centroX;player.action = "idle";}
       }
@@ -287,12 +304,20 @@
     function draw() {
       dibujarEscenario();
       let sprite1 = sprites[player.action];
-      ctx.drawImage(sprite1,player.frame * player.width, 0, player.width, player.height,player.x, player.y, player.width, player.height);
+      ctx.drawImage(
+        sprite1,
+        player.frame * player.width, 0, player.width, player.height,
+        player.x, player.y, player.width*scale, player.height*scale
+      );
       let sprite2 = sprites["ella"+capitalize(ella.action)];
       ctx.save();
-      ctx.translate(ella.x + ella.width, ella.y);
+      ctx.translate(ella.x + ella.width*scale, ella.y);
       ctx.scale(-1,1);
-      ctx.drawImage(sprite2,ella.frame * ella.width, 0, ella.width, ella.height,0, 0, ella.width, ella.height);
+      ctx.drawImage(
+        sprite2,
+        ella.frame * ella.width, 0, ella.width, ella.height,
+        0, 0, ella.width*scale, ella.height*scale
+      );
       ctx.restore();
       corazones.forEach(c=>{
         ctx.fillStyle = 'pink';
