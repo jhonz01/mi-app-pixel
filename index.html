@@ -2,344 +2,155 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pa' ti mi cachetona 💖</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escenario Romántico</title>
   <style>
-    html, body {
+    body {
+      background: linear-gradient(to bottom, #74b9ff, #a29bfe);
       margin: 0;
-      padding: 0;
+      font-family: 'Press Start 2P', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
       overflow: hidden;
-      background: #222;
-      font-family: 'Press Start 2P', Arial, sans-serif;
-      text-align: center;
-      height: 100%;
-      width: 100vw;
     }
 
     h1 {
-      margin: 10px 0 0 0;
-      font-size: 5vw;
-      color: #fff;
-      text-shadow: 2px 2px 0 #000;
-      letter-spacing: 2px;
-      z-index: 10;
+      color: white;
+      text-shadow: 2px 2px #000;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    /* Subimos la pantalla del videojuego */
+    #gameContainer {
       position: relative;
-    }
-
-    #mensaje {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 12px;
-      display: inline-block;
-      font-size: 4vw;
-      box-shadow: 0 2px 8px #0006;
-      min-width: 60vw;
-      max-width: 90vw;
-      z-index: 10;
-    }
-
-    /* 🕹️ Pantalla centrada tipo videojuego */
-    #gameCanvas {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111;
-      border: 8px solid #555;
-      border-radius: 12px;
-      box-shadow: 0 0 40px #000 inset, 0 0 25px #0008;
-      width: 90vw;
-      max-width: 600px;
-      height: auto;
-      aspect-ratio: 16 / 9;
-      image-rendering: pixelated;
-      z-index: 5;
-    }
-
-    .controles {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      z-index: 10;
-      width: 95vw;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .controles button {
+      margin-top: 30px; /* antes estaba más abajo, ahora más arriba */
       background: #222;
-      border: 4px solid #fff;
-      color: #fff;
-      font-family: 'Press Start 2P', Arial, sans-serif;
-      font-size: 3vw;
+      padding: 10px;
+      border: 4px solid #000;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    canvas {
+      display: block;
+      background: linear-gradient(to top, #74b9ff 0%, #0984e3 100%);
+      border: 2px solid black;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    button {
+      background: #2ecc71;
+      border: none;
+      color: white;
+      font-family: 'Press Start 2P', cursive;
       padding: 8px 12px;
+      border-radius: 6px;
       cursor: pointer;
-      image-rendering: pixelated;
-      box-shadow: 4px 4px 0 #000;
-      transition: all 0.1s;
-      min-width: 80px;
+      box-shadow: 0 4px #27ae60;
     }
 
-    .controles button:active {
-      background: #ff66a3;
-      color: #000;
-      box-shadow: 2px 2px 0 #000;
-      transform: translate(2px,2px);
+    button:active {
+      box-shadow: 0 2px #1e8449;
+      transform: translateY(2px);
     }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 7vw; }
-      #mensaje { font-size: 5vw; }
-      .controles button { font-size: 4vw; min-width: 60px; }
-    }
-
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   </style>
 </head>
 <body>
-  <h1>Pa' ti mi cachetona 💖</h1>
-  <canvas id="gameCanvas" width="320" height="160"></canvas>
-  <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
-  <div class="controles">
-    <button id="btnAutoWalk">MOVE</button>
-    <button id="btnMusica">PLAY</button>
-    <button id="btnVoz">VOICE</button>
-    <button id="btnMensaje">MSG</button>
+  <h1>🌅 Nuestro Mini Escenario 🌅</h1>
+
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="700" height="400"></canvas>
   </div>
 
-  <audio id="musica" src="musica.mp3"></audio>
-  <audio id="voz" src="mi_voz.mp3"></audio>
+  <div class="controls">
+    <button id="btnMusic">🎵 Música</button>
+    <button id="btnVoice">🎤 Voz</button>
+    <button id="btnMsg">💌 Mensaje</button>
+  </div>
 
   <script>
-    const mensajes = [
-      "Pa’ ti mi cachetona hermosa 🌹",
-      "Te extraño mucho 💖",
-      "Eres mi persona favorita 😘",
-      "Siempre pienso en ti 🥰",
-      "¡Sonríe, mi amor! 😊",
-      "Tú eres mi cielo 🌈",
-      "¡Te amo infinito! 💞",
-      "Eres mi pixel preferido 🟪",
-      "Quiero abrazarte ya 🫂",
-      "¡Eres mi razón de sonreír! 😍"
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const sueloAltura = 80;
+    let personajes = [];
+    let corazoncitos = [];
+    let mensajes = [
+      "Eres mi lugar favorito 💖",
+      "Cada día contigo es un regalo 🎁",
+      "Tu sonrisa ilumina todo 🌟",
+      "Te amo con cada pixel 💞"
     ];
+    let mensajeIndex = 0;
 
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-
-    const sprites = {
-      idle: new Image(),
-      walk: new Image(),
-      ellaIdle: new Image(),
-      ellaWalk: new Image()
-    };
-    sprites.idle.src = "sprites/idle.png";
-    sprites.walk.src = "sprites/walk.png";
-    sprites.ellaIdle.src = "sprites/ella_idle.png";
-    sprites.ellaWalk.src = "sprites/ella_walk.png";
-
-    const sueloAltura = 40;
-
-    let player = { x: 0, y: canvas.height - sueloAltura - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
-    let ella = { x: canvas.width - 32, y: canvas.height - sueloAltura - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
-
-    let corazones = [];
-
-    function nuevoMensaje() {
-      document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
-    }
-    document.getElementById("btnMensaje").onclick = nuevoMensaje;
-    document.getElementById("mensaje").onclick = nuevoMensaje;
-
-    document.getElementById("btnAutoWalk").onclick = () => {
-      player.x = 0;
-      ella.x = canvas.width - ella.width;
-      player.action = "walk";
-      ella.action = "walk";
-      player.autoWalk = true;
-      ella.autoWalk = true;
-      corazones = [];
-    };
-
-    const musica = document.getElementById("musica");
-    document.getElementById("btnMusica").onclick = () => musica.paused ? musica.play() : musica.pause();
-    const voz = document.getElementById("voz");
-    document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
-
-    // Estrellas y cielo
-    let estrellas = Array.from({length: 50}, () => ({x: Math.random()*canvas.width,y: Math.random()*(canvas.height - sueloAltura),brillo: Math.random()}));
-    let fugaces = [];
-
-    function generarFugaces() {
-      let cantidad = Math.floor(Math.random()*4);
-      for (let i=0; i<cantidad; i++) {
-        fugaces.push({x: Math.random()*canvas.width,y: Math.random()*canvas.height/2,vx: -2 - Math.random()*2,vy: 1 + Math.random()*1,vida: 50 + Math.random()*50});
-      }
-    }
-    setInterval(generarFugaces, 8000);
-
-    let clouds = Array.from({length: 5}, () => ({
-      x: Math.random()*canvas.width,
-      y: 20 + Math.random()*40,
-      size: 10 + Math.random()*15,
-      speed: 0.02 + Math.random()*0.02
-    }));
-
-    function getMoonPhaseFraction() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      const c = 29.530588853;
-      const j = (year-2000)*12.3685 + month;
-      const i = j|0;
-      const n = day + (year-2000)*365.25 + month*30.6;
-      const phase = (n%c)/c;
-      return phase;
-    }
+    const personaje1 = { x: 50, y: canvas.height - sueloAltura - 60, color: '#ff6b6b' };
+    const personaje2 = { x: canvas.width - 100, y: canvas.height - sueloAltura - 60, color: '#6c5ce7' };
+    personajes.push(personaje1, personaje2);
 
     function dibujarEscenario() {
-      let hora = new Date().getHours();
-      let colorCielo;
-      if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
-      else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
-      else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
-      else colorCielo = '#0B0033';
-      ctx.fillStyle = colorCielo;
-      ctx.fillRect(0,0,canvas.width,canvas.height);
+      // Fondo
+      let gradiente = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradiente.addColorStop(0, '#74b9ff');
+      gradiente.addColorStop(1, '#81ecec');
+      ctx.fillStyle = gradiente;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Estrellas
-      if (hora >= 19 || hora < 5) {
-        estrellas.forEach(e=>{
-          e.brillo += (Math.random()-0.5)*0.1;
-          e.brillo = Math.max(0.2, Math.min(1, e.brillo));
-          ctx.fillStyle = `rgba(255,255,255,${e.brillo})`;
-          ctx.fillRect(Math.floor(e.x), Math.floor(e.y), 1, 1);
-        });
-        fugaces.forEach(f=>{
-          ctx.strokeStyle = 'white';
-          ctx.beginPath();
-          ctx.moveTo(f.x,f.y);
-          ctx.lineTo(f.x+5,f.y-2);
-          ctx.stroke();
-          f.x += f.vx; f.y += f.vy; f.vida--;
-        });
-        fugaces = fugaces.filter(f=>f.vida>0);
-      }
-
-      // Sol y luna
-      if (hora>=6 && hora<19){
-        let sunProgress = (hora-6)/13;
-        let sunX = sunProgress*canvas.width;
-        let sunY = 40 - Math.sin(sunProgress*Math.PI)*30;
-        ctx.fillStyle = '#FFD700';
-        ctx.fillRect(sunX, sunY, 16,16);
-      } else {
-        let moonProgress = (hora>=19? (hora-19)/11 : (hora+5)/11);
-        let moonX = canvas.width - moonProgress*canvas.width;
-        let moonY = 40 - Math.sin(moonProgress*Math.PI)*30;
-        let phase = getMoonPhaseFraction();
-        ctx.fillStyle = '#CCCCCC';
-        ctx.fillRect(moonX, moonY, 16,16);
-        ctx.fillStyle = colorCielo;
-        ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
-      }
-
-      clouds.forEach(cl=>{
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
-        ctx.fillRect(cl.x+cl.size/4, cl.y-2, cl.size/2, cl.size/2);
-        cl.x += cl.speed;
-        if (cl.x>canvas.width) cl.x=-cl.size;
-      });
-
-      // 🌿 Suelo animado con flores
-      const sueloY = canvas.height - sueloAltura;
-      for (let y = 0; y < sueloAltura; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-          let colorBase = y < 10
-            ? (Math.random() < 0.1 ? '#3b8a3b' : '#2e7031')
-            : (Math.random() < 0.1 ? '#5a3820' : '#4a2e17');
-          ctx.fillStyle = colorBase;
-          ctx.fillRect(x, sueloY + y, 1, 1);
-        }
-      }
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fillRect(0, sueloY, canvas.width, 3);
-      const tiempo = Date.now() * 0.002;
-      for (let i = 0; i < canvas.width; i++) {
-        let offset = Math.sin(i * 0.1 + tiempo) * 1.5;
-        let tono = Math.random() < 0.5 ? '#3fa34d' : '#2f913f';
-        ctx.fillStyle = tono;
-        ctx.fillRect(i, sueloY - 2 - offset, 1, 2);
-      }
-      for (let i = 0; i < canvas.width; i += 10) {
-        if (Math.random() < 0.04) {
-          const flowerColors = ['#ff4f8b', '#ffd93b', '#8b5cf6', '#ff8c00'];
-          const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
-          const sway = Math.sin(tiempo + i * 0.5) * 1;
-          ctx.fillStyle = color;
-          ctx.fillRect(i + sway, sueloY - 6 - Math.random()*2, 1, 1);
-        }
-      }
+      // Suelo original verde
+      ctx.fillStyle = '#228B22';
+      ctx.fillRect(0, canvas.height - sueloAltura, canvas.width, sueloAltura);
     }
 
-    // --- Animaciones del juego ---
-    let frameTimer = 0;
+    function dibujarPersonajes() {
+      personajes.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 50, 60);
+      });
+    }
+
+    function dibujarCorazones() {
+      corazoncitos.forEach(c => {
+        ctx.fillStyle = 'pink';
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        c.y -= 1;
+        c.opacity -= 0.01;
+      });
+      corazoncitos = corazoncitos.filter(c => c.opacity > 0);
+    }
+
     function update() {
-      frameTimer++;
-      if (frameTimer % 10 === 0){
-        player.frame = (player.frame + 1) % player.frameCount;
-        ella.frame = (ella.frame + 1) % ella.frameCount;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      dibujarEscenario();
+      dibujarPersonajes();
+      dibujarCorazones();
+
+      if (personaje1.x < canvas.width / 2 - 60) personaje1.x += 1;
+      if (personaje2.x > canvas.width / 2 + 10) personaje2.x -= 1;
+
+      if (Math.abs(personaje1.x - personaje2.x) < 70) {
+        corazoncitos.push({ x: canvas.width / 2, y: personaje1.y - 20, opacity: 1 });
       }
-      let centroX = (canvas.width - player.width)/2 - player.width/2;
-      let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
-      if (player.autoWalk) {
-        if (player.x < centroX) player.x += player.speed; else {player.x = centroX;player.action = "idle";}
-      }
-      if (ella.autoWalk) {
-        if (ella.x > centroElla) ella.x -= ella.speed; else {ella.x = centroElla;ella.action = "idle";}
-      }
-      if (player.action==="idle" && ella.action==="idle" && corazones.length===0){
-        for (let i=0; i<10; i++){
-          corazones.push({x: (player.x+ella.x)/2+player.width/2,y: player.y,vy: -1-Math.random()*1,vida: 60+Math.random()*40});
-        }
-      }
-      draw();
+
       requestAnimationFrame(update);
     }
 
-    function draw() {
-      dibujarEscenario();
-      let sprite1 = sprites[player.action];
-      ctx.drawImage(sprite1,player.frame * player.width, 0, player.width, player.height,player.x, player.y, player.width, player.height);
-      let sprite2 = sprites["ella"+capitalize(ella.action)];
-      ctx.save();
-      ctx.translate(ella.x + ella.width, ella.y);
-      ctx.scale(-1,1);
-      ctx.drawImage(sprite2,ella.frame * ella.width, 0, ella.width, ella.height,0, 0, ella.width, ella.height);
-      ctx.restore();
-      corazones.forEach(c=>{
-        ctx.fillStyle = 'pink';
-        ctx.fillRect(c.x,c.y,2,2);
-        ctx.fillRect(c.x-1,c.y+1,1,1);
-        ctx.fillRect(c.x+2,c.y+1,1,1);
-        c.y += c.vy;
-        c.vida--;
-      });
-      corazones = corazones.filter(c=>c.vida>0);
-    }
-    function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
     update();
+
+    document.getElementById('btnMsg').addEventListener('click', () => {
+      alert(mensajes[mensajeIndex]);
+      mensajeIndex = (mensajeIndex + 1) % mensajes.length;
+    });
   </script>
 </body>
 </html>
