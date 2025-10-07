@@ -131,6 +131,8 @@
     sprites.walk.src = "sprites/walk.png";
     sprites.ellaIdle.src = "sprites/ella_idle.png";
     sprites.ellaWalk.src = "sprites/ella_walk.png";
+    sprites.suelo = new Image();
+    sprites.suelo.src = "sprites/suelo.png";
 
     const sueloAltura = 40;
 
@@ -176,10 +178,9 @@
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
       size: 10 + Math.random()*15,
-      speed: 0.02 + Math.random()*0.02  // 👈 velocidad media-lenta
+      speed: 0.02 + Math.random()*0.02
     }));
 
-    // función para fases lunares
     function getMoonPhaseFraction() {
       const now = new Date();
       const year = now.getFullYear();
@@ -205,7 +206,6 @@
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // estrellas
       if (hora >= 19 || hora < 5) {
         estrellas.forEach(e=>{
           e.brillo += (Math.random()-0.5)*0.1;
@@ -224,30 +224,25 @@
         fugaces = fugaces.filter(f=>f.vida>0);
       }
 
-      // sol
       if (hora>=6 && hora<19){
-        let sunProgress = (hora-6)/13; // 0 a 1
+        let sunProgress = (hora-6)/13;
         let sunX = sunProgress*canvas.width;
         let sunY = 40 - Math.sin(sunProgress*Math.PI)*30;
         ctx.fillStyle = '#FFD700';
-        ctx.fillRect(sunX, sunY, 16,16); // cuadrado pixelado
+        ctx.fillRect(sunX, sunY, 16,16);
       }
 
-      // luna
       if (hora>=19 || hora<6){
         let moonProgress = (hora>=19? (hora-19)/11 : (hora+5)/11);
         let moonX = canvas.width - moonProgress*canvas.width;
         let moonY = 40 - Math.sin(moonProgress*Math.PI)*30;
         let phase = getMoonPhaseFraction();
-        // fondo oscuro de la luna
         ctx.fillStyle = '#CCCCCC';
         ctx.fillRect(moonX, moonY, 16,16);
-        // recorte fase lunar
         ctx.fillStyle = colorCielo;
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes pixel art lentas
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -256,8 +251,11 @@
         if (cl.x>canvas.width) cl.x=-cl.size;
       });
 
-      ctx.fillStyle = '#228B22';
-      ctx.fillRect(0,canvas.height - sueloAltura,canvas.width,sueloAltura);
+      // --- AQUÍ SE REEMPLAZÓ EL RECTÁNGULO VERDE POR SU TILE DEL SUELO ---
+      let sueloY = canvas.height - sueloAltura;
+      for (let x = 0; x < canvas.width; x += 143) {
+        ctx.drawImage(sprites.suelo, x, sueloY, 143, 32);
+      }
     }
 
     let frameTimer = 0;
