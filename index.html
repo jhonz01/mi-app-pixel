@@ -171,29 +171,12 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas (las que ya estaban)
+    // nubes lentas
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
       size: 10 + Math.random()*15,
       speed: 0.02 + Math.random()*0.02
-    }));
-
-    // NUEVAS NUBES DE FONDO (con sprites)
-    const cloudSprites = {
-      dia: new Image(),
-      atardecer: new Image(),
-      noche: new Image()
-    };
-    cloudSprites.dia.src = "sprites/nubes_dia.png";
-    cloudSprites.atardecer.src = "sprites/nubes_atardecer.png";
-    cloudSprites.noche.src = "sprites/nubes_noche.png";
-
-    let fondoNubes = Array.from({length: 3}, () => ({
-      x: Math.random()*canvas.width,
-      y: 5 + Math.random()*20,
-      ancho: 100 + Math.random()*60,
-      velocidad: 0.01 + Math.random()*0.02
     }));
 
     // fase lunar
@@ -214,7 +197,7 @@
 
     // --- DIBUJAR ESCENARIO ---
     const sueloImg = new Image();
-    sueloImg.src = "sprites/suelo.png";
+    sueloImg.src = "sprites/suelo.png"; // 👈 su sprite 320x32
 
     function dibujarEscenario() {
       let hora = new Date().getHours();
@@ -225,18 +208,6 @@
       else colorCielo = '#0B0033';
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      // DIBUJAR NUEVAS NUBES DE FONDO
-      let imgNubes;
-      if (hora >= 8 && hora < 17) imgNubes = cloudSprites.dia;
-      else if (hora >= 17 && hora < 19) imgNubes = cloudSprites.atardecer;
-      else imgNubes = cloudSprites.noche;
-
-      fondoNubes.forEach(n => {
-        if (imgNubes.complete) ctx.drawImage(imgNubes, n.x, n.y, n.ancho, n.ancho * 0.5);
-        n.x += n.velocidad;
-        if (n.x > canvas.width) n.x = -n.ancho;
-      });
 
       // estrellas
       if (hora >= 19 || hora < 5) {
@@ -278,7 +249,7 @@
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes originales
+      // nubes
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -287,7 +258,7 @@
         if (cl.x>canvas.width) cl.x=-cl.size;
       });
 
-      // suelo
+      // --- Suelo con sprite ---
       const tiles = Math.ceil(canvas.width / 320);
       for (let i = 0; i < tiles; i++) {
         ctx.drawImage(sueloImg, i * 320, canvas.height - 32, 320, 32);
@@ -338,7 +309,6 @@
       });
       corazones = corazones.filter(c=>c.vida>0);
     }
-
     function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
     update();
   </script>
