@@ -132,9 +132,18 @@
     sprites.ellaIdle.src = "sprites/ella_idle.png";
     sprites.ellaWalk.src = "sprites/ella_walk.png";
 
+    // --- NUEVO: Nubes PNG de fondo (con transparencia) ---
+    const fondoNubes = {
+      dia: new Image(),
+      tarde: new Image(),
+      noche: new Image()
+    };
+    fondoNubes.dia.src = "sprites/fondo_nubes_dia.png";
+    fondoNubes.tarde.src = "sprites/fondo_nubes_tarde.png";
+    fondoNubes.noche.src = "sprites/fondo_nubes_noche.png";
 
-   let player = { x: 0, y: canvas.height - 32 - 32, width: 32, height: 20, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
-let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height: 20, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
+    let player = { x: 0, y: canvas.height - 32 - 32, width: 32, height: 20, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
+    let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height: 20, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
     let corazones = [];
     function nuevoMensaje() {
@@ -159,14 +168,13 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
     document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
 
     // estrellas
-   let estrellas = Array.from({length: 50}, () => ({
-  x: Math.random() * canvas.width,
-  y: Math.random() * (canvas.height - 32), // 32 = altura del suelo
-  brillo: Math.random()
-}));
+    let estrellas = Array.from({length: 50}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * (canvas.height - 32),
+      brillo: Math.random()
+    }));
 
     let fugaces = [];
-
     function generarFugaces() {
       let cantidad = Math.floor(Math.random()*4);
       for (let i=0; i<cantidad; i++) {
@@ -175,7 +183,7 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas
+    // nubes lentas animadas
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
@@ -183,7 +191,6 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
       speed: 0.02 + Math.random()*0.02
     }));
 
-    // fase lunar
     function getMoonPhaseFraction() {
       const now = new Date();
       const year = now.getFullYear();
@@ -199,9 +206,8 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
       return phase;
     }
 
-    // --- DIBUJAR ESCENARIO ---
     const sueloImg = new Image();
-    sueloImg.src = "sprites/suelo.png"; // 👈 su sprite 320x32
+    sueloImg.src = "sprites/suelo.png";
 
     function dibujarEscenario() {
       let hora = new Date().getHours();
@@ -210,8 +216,19 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
       else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
       else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
       else colorCielo = '#0B0033';
+
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      // --- NUEVO: Nubes PNG de fondo ---
+      let fondoActual;
+      if (hora >= 8 && hora < 17) fondoActual = fondoNubes.dia;
+      else if (hora >= 17 && hora < 19) fondoActual = fondoNubes.tarde;
+      else fondoActual = fondoNubes.noche;
+
+      if (fondoActual.complete && fondoActual.naturalWidth > 0) {
+        ctx.drawImage(fondoActual, 0, 0, canvas.width, canvas.height);
+      }
 
       // estrellas
       if (hora >= 19 || hora < 5) {
@@ -253,7 +270,7 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes
+      // nubes pequeñas animadas (mantener)
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -262,7 +279,7 @@ let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height
         if (cl.x>canvas.width) cl.x=-cl.size;
       });
 
-      // --- Suelo con sprite ---
+      // suelo
       const tiles = Math.ceil(canvas.width / 320);
       for (let i = 0; i < tiles; i++) {
         ctx.drawImage(sueloImg, i * 320, canvas.height - 32, 320, 32);
