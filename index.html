@@ -197,7 +197,17 @@
 
     // --- DIBUJAR ESCENARIO ---
     const sueloImg = new Image();
-    sueloImg.src = "sprites/suelo.png"; // 👈 su sprite 320x32
+    sueloImg.src = "sprites/suelo.png";
+
+    // --- FONDOS DE NUBES SEGÚN HORA ---
+    const fondoNubes = {
+      dia: new Image(),
+      tarde: new Image(),
+      noche: new Image()
+    };
+    fondoNubes.dia.src = "sprites/fondo_nubes_dia.png";
+    fondoNubes.tarde.src = "sprites/fondo_nubes_tarde.png";
+    fondoNubes.noche.src = "sprites/fondo_nubes_noche.png";
 
     function dibujarEscenario() {
       let hora = new Date().getHours();
@@ -208,6 +218,18 @@
       else colorCielo = '#0B0033';
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      // fondo de nubes decorativo
+      let imgFondo;
+      if (hora >= 5 && hora < 17) imgFondo = fondoNubes.dia;
+      else if (hora >= 17 && hora < 19) imgFondo = fondoNubes.tarde;
+      else imgFondo = fondoNubes.noche;
+
+      if (imgFondo.complete) {
+        const desplazamiento = (Date.now() / 30000) % canvas.width;
+        ctx.drawImage(imgFondo, -desplazamiento, 0, canvas.width, canvas.height - sueloAltura);
+        ctx.drawImage(imgFondo, canvas.width - desplazamiento, 0, canvas.width, canvas.height - sueloAltura);
+      }
 
       // estrellas
       if (hora >= 19 || hora < 5) {
@@ -249,7 +271,7 @@
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes
+      // nubes blancas (las de siempre)
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
