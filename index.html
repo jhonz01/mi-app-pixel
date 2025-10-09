@@ -171,13 +171,22 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas
+    // --- NUBES con sprites ---
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
-      y: 20 + Math.random()*40,
-      size: 10 + Math.random()*15,
-      speed: 0.02 + Math.random()*0.02
+      y: 10 + Math.random()*30,
+      size: 64 + Math.random()*32,
+      speed: 0.05 + Math.random()*0.03
     }));
+
+    const cloudSprites = {
+      dia: new Image(),
+      atardecer: new Image(),
+      noche: new Image()
+    };
+    cloudSprites.dia.src = "sprites/nubes_dia.png";
+    cloudSprites.atardecer.src = "sprites/nubes_atardecer.png";
+    cloudSprites.noche.src = "sprites/nubes_noche.png";
 
     // fase lunar
     function getMoonPhaseFraction() {
@@ -208,6 +217,20 @@
       else colorCielo = '#0B0033';
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      // --- Nubes con sprites ---
+      let imgNubes;
+      if (hora >= 8 && hora < 17) imgNubes = cloudSprites.dia;
+      else if (hora >= 17 && hora < 19) imgNubes = cloudSprites.atardecer;
+      else imgNubes = cloudSprites.noche;
+
+      clouds.forEach(cl => {
+        if (imgNubes.complete) {
+          ctx.drawImage(imgNubes, cl.x, cl.y, cl.size, cl.size * 0.5);
+        }
+        cl.x += cl.speed;
+        if (cl.x > canvas.width) cl.x = -cl.size;
+      });
 
       // estrellas
       if (hora >= 19 || hora < 5) {
@@ -248,15 +271,6 @@
         ctx.fillStyle = colorCielo;
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
-
-      // nubes
-      clouds.forEach(cl=>{
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
-        ctx.fillRect(cl.x+cl.size/4, cl.y-2, cl.size/2, cl.size/2);
-        cl.x += cl.speed;
-        if (cl.x>canvas.width) cl.x=-cl.size;
-      });
 
       // --- Suelo con sprite ---
       const tiles = Math.ceil(canvas.width / 320);
