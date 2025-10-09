@@ -171,14 +171,15 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // --- NUBES con sprites ---
+    // nubes lentas (las que ya estaban)
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
-      y: 10 + Math.random()*30,
-      size: 64 + Math.random()*32,
-      speed: 0.05 + Math.random()*0.03
+      y: 20 + Math.random()*40,
+      size: 10 + Math.random()*15,
+      speed: 0.02 + Math.random()*0.02
     }));
 
+    // NUEVAS NUBES DE FONDO (con sprites)
     const cloudSprites = {
       dia: new Image(),
       atardecer: new Image(),
@@ -187,6 +188,13 @@
     cloudSprites.dia.src = "sprites/nubes_dia.png";
     cloudSprites.atardecer.src = "sprites/nubes_atardecer.png";
     cloudSprites.noche.src = "sprites/nubes_noche.png";
+
+    let fondoNubes = Array.from({length: 3}, () => ({
+      x: Math.random()*canvas.width,
+      y: 5 + Math.random()*20,
+      ancho: 100 + Math.random()*60,
+      velocidad: 0.01 + Math.random()*0.02
+    }));
 
     // fase lunar
     function getMoonPhaseFraction() {
@@ -206,7 +214,7 @@
 
     // --- DIBUJAR ESCENARIO ---
     const sueloImg = new Image();
-    sueloImg.src = "sprites/suelo.png"; // 👈 su sprite 320x32
+    sueloImg.src = "sprites/suelo.png";
 
     function dibujarEscenario() {
       let hora = new Date().getHours();
@@ -218,18 +226,16 @@
       ctx.fillStyle = colorCielo;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // --- Nubes con sprites ---
+      // DIBUJAR NUEVAS NUBES DE FONDO
       let imgNubes;
       if (hora >= 8 && hora < 17) imgNubes = cloudSprites.dia;
       else if (hora >= 17 && hora < 19) imgNubes = cloudSprites.atardecer;
       else imgNubes = cloudSprites.noche;
 
-      clouds.forEach(cl => {
-        if (imgNubes.complete) {
-          ctx.drawImage(imgNubes, cl.x, cl.y, cl.size, cl.size * 0.5);
-        }
-        cl.x += cl.speed;
-        if (cl.x > canvas.width) cl.x = -cl.size;
+      fondoNubes.forEach(n => {
+        if (imgNubes.complete) ctx.drawImage(imgNubes, n.x, n.y, n.ancho, n.ancho * 0.5);
+        n.x += n.velocidad;
+        if (n.x > canvas.width) n.x = -n.ancho;
       });
 
       // estrellas
@@ -272,7 +278,16 @@
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // --- Suelo con sprite ---
+      // nubes originales
+      clouds.forEach(cl=>{
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
+        ctx.fillRect(cl.x+cl.size/4, cl.y-2, cl.size/2, cl.size/2);
+        cl.x += cl.speed;
+        if (cl.x>canvas.width) cl.x=-cl.size;
+      });
+
+      // suelo
       const tiles = Math.ceil(canvas.width / 320);
       for (let i = 0; i < tiles; i++) {
         ctx.drawImage(sueloImg, i * 320, canvas.height - 32, 320, 32);
@@ -323,6 +338,7 @@
       });
       corazones = corazones.filter(c=>c.vida>0);
     }
+
     function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
     update();
   </script>
