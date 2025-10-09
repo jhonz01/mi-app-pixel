@@ -121,6 +121,7 @@
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
+    // SPRITES PRINCIPALES
     const sprites = {
       idle: new Image(),
       walk: new Image(),
@@ -131,6 +132,16 @@
     sprites.walk.src = "sprites/walk.png";
     sprites.ellaIdle.src = "sprites/ella_idle.png";
     sprites.ellaWalk.src = "sprites/ella_walk.png";
+
+    // FONDOS DEL CIELO
+    const fondos = {
+      dia: new Image(),
+      tarde: new Image(),
+      noche: new Image()
+    };
+    fondos.dia.src = "sprites/fondos/fondo_dia.png";
+    fondos.tarde.src = "sprites/fondos/fondo_tarde.png";
+    fondos.noche.src = "sprites/fondos/fondo_noche.png";
 
     const sueloAltura = 32;
 
@@ -171,7 +182,7 @@
     }
     setInterval(generarFugaces, 8000);
 
-    // nubes lentas
+    // nubes pequeñas animadas
     let clouds = Array.from({length: 5}, () => ({
       x: Math.random()*canvas.width,
       y: 20 + Math.random()*40,
@@ -197,17 +208,20 @@
 
     // --- DIBUJAR ESCENARIO ---
     const sueloImg = new Image();
-    sueloImg.src = "sprites/suelo.png"; // 👈 su sprite 320x32
+    sueloImg.src = "sprites/suelo.png"; 
 
     function dibujarEscenario() {
       let hora = new Date().getHours();
-      let colorCielo;
-      if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
-      else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
-      else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
-      else colorCielo = '#0B0033';
-      ctx.fillStyle = colorCielo;
-      ctx.fillRect(0,0,canvas.width,canvas.height);
+      let fondo;
+
+      // elegir fondo según la hora
+      if (hora >= 5 && hora < 8) fondo = fondos.dia;
+      else if (hora >= 8 && hora < 17) fondo = fondos.dia;
+      else if (hora >= 17 && hora < 19) fondo = fondos.tarde;
+      else fondo = fondos.noche;
+
+      // dibujar fondo de nubes
+      ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
 
       // estrellas
       if (hora >= 19 || hora < 5) {
@@ -245,11 +259,11 @@
         let phase = getMoonPhaseFraction();
         ctx.fillStyle = '#CCCCCC';
         ctx.fillRect(moonX, moonY, 16,16);
-        ctx.fillStyle = colorCielo;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
       }
 
-      // nubes
+      // nubes pequeñas
       clouds.forEach(cl=>{
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -258,7 +272,7 @@
         if (cl.x>canvas.width) cl.x=-cl.size;
       });
 
-      // --- Suelo con sprite ---
+      // suelo con sprite
       const tiles = Math.ceil(canvas.width / 320);
       for (let i = 0; i < tiles; i++) {
         ctx.drawImage(sueloImg, i * 320, canvas.height - 32, 320, 32);
