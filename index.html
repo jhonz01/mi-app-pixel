@@ -105,8 +105,6 @@
 
   <script>
 'use strict';
-console.clear();
-
 const mensajes = [
   "Pa’ ti mi cachetona hermosa 🌹",
   "Te extraño mucho 💖",
@@ -130,19 +128,28 @@ const sprites = {
   walk: new Image(),
   ellaIdle: new Image(),
   ellaWalk: new Image(),
-  corazones: new Image()
+  corazones: new Image(),
+  suelo: new Image(),
+  fondoDia: new Image(),
+  fondoTarde: new Image(),
+  fondoNoche: new Image()
 };
+
 sprites.idle.src = "sprites/idle.png";
 sprites.walk.src = "sprites/walk.png";
 sprites.ellaIdle.src = "sprites/ella_idle.png";
 sprites.ellaWalk.src = "sprites/ella_walk.png";
 sprites.corazones.src = "sprites/corazones_animados.png";
+sprites.suelo.src = "sprites/suelo.png";
+sprites.fondoDia.src = "sprites/fondo_nubes_dia.png";
+sprites.fondoTarde.src = "sprites/fondo_nubes_tarde.png";
+sprites.fondoNoche.src = "sprites/fondo_nubes_noche.png";
 
 // === PERSONAJES ===
 let player = { x: 0, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 let ella = { x: canvas.width - 32, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
-// === MENSAJES ===
+// === MENSAJE ===
 function nuevoMensaje() {
   document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
 }
@@ -157,7 +164,6 @@ document.getElementById("btnAutoWalk").onclick = () => {
   ella.action = "walk";
   player.autoWalk = true;
   ella.autoWalk = true;
-  corazonesActivos = [];
 };
 
 const musica = document.getElementById("musica");
@@ -165,35 +171,88 @@ document.getElementById("btnMusica").onclick = () => musica.paused ? musica.play
 const voz = document.getElementById("voz");
 document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
 
-// === CORAZONES NUEVOS ===
-let corazonesActivos = [];
+// === CIELO, ESTRELLAS Y NUBES ===
+let estrellas = Array.from({length: 50}, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * (canvas.height - 32),
+  brillo: Math.random()
+}));
+
+let fugaces = [];
+function generarFugaces() {
+  let cantidad = Math.floor(Math.random()*4);
+  for (let i=0; i<cantidad; i++) {
+    fugaces.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height/2, vx: -2 - Math.random()*2, vy: 1 + Math.random()*1, vida: 50 + Math.random()*50});
+  }
+}
+setInterval(generarFugaces, 8000);
+
+let clouds = Array.from({length: 5}, () => ({
+  x: Math.random()*canvas.width,
+  y: 20 + Math.random()*40,
+  size: 10 + Math.random()*15,
+  speed: 0.02 + Math.random()*0.02
+}));
+
+// === CORAZONES ===
 let frameCorazon = 0;
-const anchoCorazon = 22; // 286px / 13 ≈ 22px por frame
+const anchoCorazon = 286 / 13; // ≈22px por frame
 const altoCorazon = 60;
 let frameTimer = 0;
 
-// === DIBUJAR ===
-function dibujar() {
-  ctx.fillStyle = "#222";
+function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
+
+function dibujarEscenario() {
+  let hora = new Date().getHours();
+  let colorCielo;
+  if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
+  else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
+  else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
+  else colorCielo = '#0B0033';
+  ctx.fillStyle = colorCielo;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // Dibujar personajes
-  ctx.drawImage(sprites[player.action], player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
-  ctx.save();
-  ctx.translate(ella.x + ella.width, ella.y);
-  ctx.scale(-1,1);
-  ctx.drawImage(sprites["ella"+capitalize(ella.action)], ella.frame * ella.width, 0, ella.width, ella.height, 0, 0, ella.width, ella.height);
-  ctx.restore();
+  let fondoActual;
+  if (hora >= 8 && hora < 17) fondoActual = sprites.fondoDia;
+  else if (hora >= 17 && hora < 19) fondoActual = sprites.fondoTarde;
+  else fondoActual = sprites.fondoNoche;
+  if (fondoActual.complete && fondoActual.naturalWidth > 0)
+    ctx.drawImage(fondoActual, 0, 0, canvas.width, canvas.height);
 
-  // Dibujar corazones cuando ambos estén en idle y en el centro
-  if (player.action === "idle" && ella.action === "idle") {
-    const centroX = (player.x + ella.x + player.width) / 2 - anchoCorazon / 2;
-    const centroY = player.y - altoCorazon + 10;
-    ctx.drawImage(sprites.corazones, frameCorazon * anchoCorazon, 0, anchoCorazon, altoCorazon, centroX, centroY, anchoCorazon, altoCorazon);
+  // estrellas y fugaces
+  if (hora >= 19 || hora < 5) {
+    estrellas.forEach(e=>{
+      e.brillo += (Math.random()-0.5)*0.1;
+      e.brillo = Math.max(0.2, Math.min(1, e.brillo));
+      ctx.fillStyle = `rgba(255,255,255,${e.brillo})`;
+      ctx.fillRect(Math.floor(e.x), Math.floor(e.y), 1, 1);
+    });
+    fugaces.forEach(f=>{
+      ctx.strokeStyle = 'white';
+      ctx.beginPath();
+      ctx.moveTo(f.x,f.y);
+      ctx.lineTo(f.x+5,f.y-2);
+      ctx.stroke();
+      f.x += f.vx; f.y += f.vy; f.vida--;
+    });
+    fugaces = fugaces.filter(f=>f.vida>0);
   }
+
+  // nubes simples
+  clouds.forEach(cl=>{
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
+    ctx.fillRect(cl.x+cl.size/4, cl.y-2, cl.size/2, cl.size/2);
+    cl.x += cl.speed;
+    if (cl.x>canvas.width) cl.x=-cl.size;
+  });
+
+  // suelo
+  const tiles = Math.ceil(canvas.width / 320);
+  for (let i = 0; i < tiles; i++)
+    ctx.drawImage(sprites.suelo, i * 320, canvas.height - 32, 320, 32);
 }
 
-// === ACTUALIZAR ===
 function update() {
   frameTimer++;
   if (frameTimer % 10 === 0){
@@ -206,17 +265,33 @@ function update() {
   let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
 
   if (player.autoWalk) {
-    if (player.x < centroX) player.x += player.speed; else {player.x = centroX;player.action = "idle";}
+    if (player.x < centroX) player.x += player.speed;
+    else { player.x = centroX; player.action = "idle"; }
   }
   if (ella.autoWalk) {
-    if (ella.x > centroElla) ella.x -= ella.speed; else {ella.x = centroElla;ella.action = "idle";}
+    if (ella.x > centroElla) ella.x -= ella.speed;
+    else { ella.x = centroElla; ella.action = "idle"; }
   }
 
-  dibujar();
+  dibujarEscenario();
+
+  // dibujar personajes
+  ctx.drawImage(sprites[player.action], player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
+  ctx.save();
+  ctx.translate(ella.x + ella.width, ella.y);
+  ctx.scale(-1,1);
+  ctx.drawImage(sprites["ella"+capitalize(ella.action)], ella.frame * ella.width, 0, ella.width, ella.height, 0, 0, ella.width, ella.height);
+  ctx.restore();
+
+  // corazones sobre las cabezas
+  if (player.action === "idle" && ella.action === "idle") {
+    const centroXCorazon = (player.x + ella.x + player.width) / 2 - anchoCorazon / 2;
+    const centroYCorazon = player.y - altoCorazon + 10;
+    ctx.drawImage(sprites.corazones, frameCorazon * anchoCorazon, 0, anchoCorazon, altoCorazon, centroXCorazon, centroYCorazon, anchoCorazon, altoCorazon);
+  }
+
   requestAnimationFrame(update);
 }
-
-function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
 
 update();
   </script>
