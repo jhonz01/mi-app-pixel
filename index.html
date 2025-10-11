@@ -100,23 +100,11 @@
     <button id="btnMensaje">MSG</button>
   </div>
 
-  <audio id="musica" src="musica.mp3"></audio>
-  <audio id="voz" src="mi_voz.mp3"></audio>
+
 
   <script>
 'use strict';
-const mensajes = [
-  "Pa’ ti mi cachetona hermosa 🌹",
-  "Te extraño mucho 💖",
-  "Eres mi persona favorita 😘",
-  "Siempre pienso en ti 🥰",
-  "¡Sonríe, mi amor! 😊",
-  "Tú eres mi cielo 🌈",
-  "¡Te amo infinito! 💞",
-  "Eres mi pixel preferido 🟪",
-  "Quiero abrazarte ya 🫂",
-  "¡Eres mi razón de sonreír! 😍"
-];
+
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -147,11 +135,7 @@ sprites.fondoNoche.src = "sprites/fondo_nubes_noche.png";
 let player = { x: 0, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 let ella = { x: canvas.width - 32, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
-function nuevoMensaje() {
-  document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
-}
-document.getElementById("btnMensaje").onclick = nuevoMensaje;
-document.getElementById("mensaje").onclick = nuevoMensaje;
+
 
 document.getElementById("btnAutoWalk").onclick = () => {
   player.x = 0;
@@ -162,10 +146,87 @@ document.getElementById("btnAutoWalk").onclick = () => {
   ella.autoWalk = true;
 };
 
-const musica = document.getElementById("musica");
-document.getElementById("btnMusica").onclick = () => musica.paused ? musica.play() : musica.pause();
-const voz = document.getElementById("voz");
-document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
+// --- 🎵 LISTAS DE ARCHIVOS ---
+const canciones = [
+  "musica/musica1.mp3",
+  "musica/musica2.mp3",
+  "musica/musica3.mp3"
+];
+
+const voces = [
+  "voz/voz1.mp3",
+  "voz/voz2.mp3",
+  "voz/voz3.mp3",
+  "voz/voz4.mp3"
+];
+
+const mensajes = [
+  "Pa’ ti mi cachetona hermosa 🌹",
+  "Te extraño mucho 💖",
+  "Eres mi persona favorita 😘",
+  "Siempre pienso en ti 🥰",
+  "¡Sonríe, mi amor! 😊",
+  "Tú eres mi cielo 🌈",
+  "¡Te amo infinito! 💞",
+  "Eres mi pixel preferido 🟪",
+  "Quiero abrazarte ya 🫂",
+  "¡Eres mi razón de sonreír! 😍"
+];
+
+// --- 📦 FUNCIONES DE ALEATORIEDAD SIN REPETIR ---
+function crearCola(lista, key) {
+  const guardados = JSON.parse(localStorage.getItem(key) || "[]");
+  const pendientes = lista.filter(item => !guardados.includes(item));
+  if (pendientes.length === 0) {
+    localStorage.setItem(key, "[]");
+    return crearCola(lista, key);
+  }
+  const elegido = pendientes[Math.floor(Math.random() * pendientes.length)];
+  guardados.push(elegido);
+  localStorage.setItem(key, JSON.stringify(guardados));
+  return elegido;
+}
+
+// --- 🎶 MÚSICA ---
+let musicaActual = null;
+
+document.getElementById("btnMusica").onclick = () => {
+  if (musicaActual && !musicaActual.paused) {
+    musicaActual.pause();
+    musicaActual = null;
+  } else {
+    const cancion = crearCola(canciones, "cancionesUsadas");
+    musicaActual = new Audio(cancion);
+    musicaActual.loop = false;
+    musicaActual.volume = 0.7;
+    musicaActual.play();
+    musicaActual.onended = () => {
+      musicaActual = null;
+    };
+  }
+};
+
+// --- 🎤 VOZ (pausa música mientras suena) ---
+document.getElementById("btnVoz").onclick = () => {
+  const voz = crearCola(voces, "vocesUsadas");
+  const audioVoz = new Audio(voz);
+  if (musicaActual && !musicaActual.paused) {
+    musicaActual.pause();
+  }
+  audioVoz.onended = () => {
+    if (musicaActual) musicaActual.play();
+  };
+  audioVoz.play();
+};
+
+// --- 💌 MENSAJES ---
+function nuevoMensaje() {
+  const msg = crearCola(mensajes, "mensajesUsados");
+  document.getElementById("mensaje").innerText = msg;
+}
+document.getElementById("btnMensaje").onclick = nuevoMensaje;
+document.getElementById("mensaje").onclick = nuevoMensaje;
+
 
 let estrellas = Array.from({length: 50}, () => ({
   x: Math.random() * canvas.width,
