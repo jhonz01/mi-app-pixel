@@ -142,7 +142,7 @@ function dibujarSolYLunaPixel() {
   if (hora >= 6 && hora < 18) {
     const t = (hora - 6) / 12;
     const x = t * canvas.width;
-    const y = Math.sin(t * Math.PI) * 50 + 40;
+    const y = Math.sin(t * Math.PI) * 50 + 60;
     
     ctx.fillStyle = "#FFD93B";
     ctx.fillRect(x - size/2, y - size/2, size, size);
@@ -154,7 +154,7 @@ function dibujarSolYLunaPixel() {
     if (hora >= 18) t = (hora - 18) / 12;
     else t = (hora + 6) / 12;
     const x = t * canvas.width;
-    const y = Math.sin(t * Math.PI) * 50 + 40;
+    const y = Math.sin(t * Math.PI) * 50 + 60;
 
     const hoy = new Date();
     const lp = 2551443;
