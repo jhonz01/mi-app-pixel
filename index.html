@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pa' ti mi cachetona 💖</title>
+
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#222" />
+
   <style>
     html, body {
       margin: 0;
@@ -210,17 +214,39 @@ function crearCola(lista, key) {
 
 
 // --- 🎤 VOZ (pausa música mientras suena) ---
-document.getElementById("btnVoz").onclick = () => {
+document.getElementById("btnVoz").onclick = async () => {
   const voz = crearCola(voces, "vocesUsadas");
   const audioVoz = new Audio(voz);
-  if (musicaActual && !musicaActual.paused) {
-    musicaActual.pause();
-  }
-  audioVoz.onended = () => {
-    if (musicaActual) musicaActual.play();
-  };
+
+  // 🎧 Crear contexto de audio para aplicar efectos suaves
+  const context = new (window.AudioContext || window.webkitAudioContext)();
+  const gainNode = context.createGain();
+  const source = context.createMediaElementSource(audioVoz);
+  source.connect(gainNode).connect(context.destination);
+
+  // Intentar activar el contexto (algunos navegadores lo requieren manualmente)
+  try { await context.resume(); } catch {}
+
+  // 🎵 Bajar volumen global de la página (efecto fade out)
+  const iframes = document.querySelectorAll("iframe");
+  iframes.forEach(frame => frame.style.transition = "filter 0.5s ease");
+  iframes.forEach(frame => frame.style.filter = "brightness(0.6)");
+
+  // Simular que la música baja poco a poco
+  gainNode.gain.linearRampToValueAtTime(0.1, context.currentTime + 0.5);
+
+  // ▶️ Reproducir tu voz
   audioVoz.play();
+
+  audioVoz.onended = () => {
+    // 🔊 Restaurar volumen (efecto fade in)
+    gainNode.gain.linearRampToValueAtTime(1, context.currentTime + 0.5);
+
+    iframes.forEach(frame => frame.style.filter = "brightness(1)");
+  };
 };
+
+
 
 // --- 💌 MENSAJES ---
 function nuevoMensaje() {
@@ -358,6 +384,13 @@ spotifyPlayer.innerHTML = `
         width="100%" height="100%" frameBorder="0" 
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
         loading="lazy"></iframe>`;
+
+// --- Registro del Service Worker (para PWA) ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+  .then(() => console.log("✅ Service Worker registrado correctamente"))
+  .catch(err => console.log("❌ Error al registrar el Service Worker:", err));
+}
 
 update();
   </script>
