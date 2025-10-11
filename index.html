@@ -30,12 +30,12 @@
   // --- NUEVO: sprite animado de corazones ---
   const corazonesSprite = new Image();
   corazonesSprite.src = "sprites/corazones.png";
-  const corazonesFrameW = 22;  // ancho de cada frame
-  const corazonesFrameH = 60;  // alto de cada frame
-  const corazonesFrames = 4;   // número total de frames en el sprite
+  const corazonesFrameW = 22;
+  const corazonesFrameH = 60;
+  const corazonesFrames = 4; // cambie este número según cuántos frames tenga su sprite
   let corazonesFrame = 0;
 
-  // --- Fondo nubes ---
+  // --- NUEVO: fondo nubes ---
   const fondoNubes = {
     dia: new Image(),
     tarde: new Image(),
@@ -45,12 +45,12 @@
   fondoNubes.tarde.src = "sprites/fondo_nubes_tarde.png";
   fondoNubes.noche.src = "sprites/fondo_nubes_noche.png";
 
-  let player = { x: 0, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
-  let ella = { x: canvas.width - 32, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
+  let player = { x: 0, y: canvas.height - 32 - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
+  let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
   let corazones = [];
   function nuevoMensaje() {
-    document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random() * mensajes.length)];
+    document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
   }
   document.getElementById("btnMensaje").onclick = nuevoMensaje;
   document.getElementById("mensaje").onclick = nuevoMensaje;
@@ -66,15 +66,12 @@
   };
 
   const musica = document.getElementById("musica");
-  document.getElementById("btnMusica").onclick = () => (musica.paused ? musica.play() : musica.pause());
+  document.getElementById("btnMusica").onclick = () => musica.paused ? musica.play() : musica.pause();
   const voz = document.getElementById("voz");
-  document.getElementById("btnVoz").onclick = () => {
-    voz.currentTime = 0;
-    voz.play();
-  };
+  document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
 
   // estrellas
-  let estrellas = Array.from({ length: 50 }, () => ({
+  let estrellas = Array.from({length: 50}, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * (canvas.height - 32),
     brillo: Math.random()
@@ -82,24 +79,19 @@
 
   let fugaces = [];
   function generarFugaces() {
-    let cantidad = Math.floor(Math.random() * 4);
-    for (let i = 0; i < cantidad; i++) {
-      fugaces.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height / 2,
-        vx: -2 - Math.random() * 2,
-        vy: 1 + Math.random() * 1,
-        vida: 50 + Math.random() * 50
-      });
+    let cantidad = Math.floor(Math.random()*4);
+    for (let i=0; i<cantidad; i++) {
+      fugaces.push({x: Math.random()*canvas.width,y: Math.random()*canvas.height/2,vx: -2 - Math.random()*2,vy: 1 + Math.random()*1,vida: 50 + Math.random()*50});
     }
   }
   setInterval(generarFugaces, 8000);
 
-  let clouds = Array.from({ length: 5 }, () => ({
-    x: Math.random() * canvas.width,
-    y: 20 + Math.random() * 40,
-    size: 10 + Math.random() * 15,
-    speed: 0.02 + Math.random() * 0.02
+  // nubes lentas animadas
+  let clouds = Array.from({length: 5}, () => ({
+    x: Math.random()*canvas.width,
+    y: 20 + Math.random()*40,
+    size: 10 + Math.random()*15,
+    speed: 0.02 + Math.random()*0.02
   }));
 
   const sueloImg = new Image();
@@ -108,14 +100,15 @@
   function dibujarEscenario() {
     let hora = new Date().getHours();
     let colorCielo;
-    if (hora >= 5 && hora < 8) colorCielo = "#FFB36B";
-    else if (hora >= 8 && hora < 17) colorCielo = "#87CEEB";
-    else if (hora >= 17 && hora < 19) colorCielo = "#FF7E5E";
-    else colorCielo = "#0B0033";
+    if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
+    else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
+    else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
+    else colorCielo = '#0B0033';
 
     ctx.fillStyle = colorCielo;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
+    // nubes PNG
     let fondoActual;
     if (hora >= 8 && hora < 17) fondoActual = fondoNubes.dia;
     else if (hora >= 17 && hora < 19) fondoActual = fondoNubes.tarde;
@@ -125,6 +118,7 @@
       ctx.drawImage(fondoActual, 0, 0, canvas.width, canvas.height);
     }
 
+    // suelo
     const tiles = Math.ceil(canvas.width / 320);
     for (let i = 0; i < tiles; i++) {
       ctx.drawImage(sueloImg, i * 320, canvas.height - 32, 320, 32);
@@ -134,40 +128,30 @@
   let frameTimer = 0;
   function update() {
     frameTimer++;
-    if (frameTimer % 10 === 0) {
+    if (frameTimer % 10 === 0){
       player.frame = (player.frame + 1) % player.frameCount;
       ella.frame = (ella.frame + 1) % ella.frameCount;
       corazonesFrame = (corazonesFrame + 1) % corazonesFrames;
     }
 
-    let centroX = (canvas.width - player.width) / 2 - player.width / 2;
-    let centroElla = (canvas.width - ella.width) / 2 + ella.width / 2;
+    let centroX = (canvas.width - player.width)/2 - player.width/2;
+    let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
 
     if (player.autoWalk) {
-      if (player.x < centroX) player.x += player.speed;
-      else {
-        player.x = centroX;
-        player.action = "idle";
-      }
+      if (player.x < centroX) player.x += player.speed; else {player.x = centroX;player.action = "idle";}
     }
-
     if (ella.autoWalk) {
-      if (ella.x > centroElla) ella.x -= ella.speed;
-      else {
-        ella.x = centroElla;
-        ella.action = "idle";
-      }
+      if (ella.x > centroElla) ella.x -= ella.speed; else {ella.x = centroElla;ella.action = "idle";}
     }
 
-    // --- NUEVO: corazones animados desde el centro entre ellos ---
-    if (player.action === "idle" && ella.action === "idle") {
+    // --- NUEVO: corazones animados solo cuando están en el centro ---
+    if (player.action==="idle" && ella.action==="idle") {
       if (frameTimer % 15 === 0) {
-        let centroEntreEllos = (player.x + ella.x + player.width) / 2 - corazonesFrameW / 2;
         corazones.push({
-          x: centroEntreEllos,
+          x: (player.x + ella.x)/2 + player.width/2 - corazonesFrameW/2,
           y: player.y - 10,
-          vy: -0.6 - Math.random() * 0.6,
-          vida: 90 + Math.random() * 60
+          vy: -0.6 - Math.random()*0.6,
+          vida: 90 + Math.random()*60
         });
       }
     }
@@ -179,38 +163,30 @@
   function draw() {
     dibujarEscenario();
 
+    // personajes
     let sprite1 = sprites[player.action];
-    ctx.drawImage(sprite1, player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
-
-    let sprite2 = sprites["ella" + capitalize(ella.action)];
+    ctx.drawImage(sprite1,player.frame * player.width, 0, player.width, player.height,player.x, player.y, player.width, player.height);
+    let sprite2 = sprites["ella"+capitalize(ella.action)];
     ctx.save();
     ctx.translate(ella.x + ella.width, ella.y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(sprite2, ella.frame * ella.width, 0, ella.width, ella.height, 0, 0, ella.width, ella.height);
+    ctx.scale(-1,1);
+    ctx.drawImage(sprite2,ella.frame * ella.width, 0, ella.width, ella.height,0, 0, ella.width, ella.height);
     ctx.restore();
 
-    // --- NUEVO: dibujo de corazones animados ---
-    corazones.forEach(c => {
+    // --- NUEVO: corazones con sprite animado ---
+    corazones.forEach(c=>{
       ctx.drawImage(
         corazonesSprite,
-        corazonesFrame * corazonesFrameW,
-        0,
-        corazonesFrameW,
-        corazonesFrameH,
-        c.x,
-        c.y,
-        corazonesFrameW,
-        corazonesFrameH
+        corazonesFrame * corazonesFrameW, 0,
+        corazonesFrameW, corazonesFrameH,
+        c.x, c.y, corazonesFrameW, corazonesFrameH
       );
       c.y += c.vy;
       c.vida--;
     });
-    corazones = corazones.filter(c => c.vida > 0);
+    corazones = corazones.filter(c=>c.vida>0);
   }
 
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
+  function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
   update();
 </script>
