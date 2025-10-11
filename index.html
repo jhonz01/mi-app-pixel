@@ -15,6 +15,7 @@
       height: 100%;
       width: 100vw;
     }
+
     h1 {
       margin: 10px 0 0 0;
       font-size: 5vw;
@@ -22,6 +23,20 @@
       text-shadow: 2px 2px 0 #000;
       letter-spacing: 2px;
     }
+
+    /* 💖 Bajamos el escenario lo suficiente */
+    #gameCanvas {
+      display: block;
+      margin: 100px auto 0 auto; /* <-- margen superior para bajarlo más */
+      background: #222;
+      width: 100vw;
+      max-width: 100vw;
+      height: 60vw;
+      max-height: 70vw;
+      image-rendering: pixelated;
+      border: 2px solid #333;
+    }
+
     #mensaje {
       position: fixed;
       bottom: 80px;
@@ -38,17 +53,7 @@
       max-width: 90vw;
       z-index: 9;
     }
-    #gameCanvas {
-      display: block;
-      margin: 0 auto;
-      background: #222;
-      width: 100vw;
-      max-width: 100vw;
-      height: 60vw;
-      max-height: 70vw;
-      image-rendering: pixelated;
-      border: 2px solid #333;
-    }
+
     .controles {
       position: fixed;
       bottom: 10px;
@@ -61,6 +66,7 @@
       justify-content: center;
       flex-wrap: wrap;
     }
+
     .controles button {
       background: #222;
       border: 4px solid #fff;
@@ -74,18 +80,25 @@
       transition: all 0.1s;
       min-width: 80px;
     }
+
     .controles button:active {
       background: #ff66a3;
       color: #000;
       box-shadow: 2px 2px 0 #000;
       transform: translate(2px,2px);
     }
+
+    /* 💡 Ajuste responsivo para móviles */
     @media (max-width: 600px) {
       h1 { font-size: 7vw; }
       #mensaje { font-size: 5vw; }
-      #gameCanvas { height: 60vw; }
+      #gameCanvas {
+        height: 60vw;
+        margin-top: 60px; /* <-- menos margen en móviles */
+      }
       .controles button { font-size: 4vw; min-width: 60px; }
     }
+
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   </style>
 </head>
@@ -93,6 +106,7 @@
   <h1>Pa' ti mi cachetona 💖</h1>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
   <div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
+
   <div class="controles">
     <button id="btnAutoWalk">MOVE</button>
     <button id="btnMusica">PLAY</button>
@@ -273,7 +287,6 @@ function update() {
   ctx.drawImage(sprites["ella"+capitalize(ella.action)], ella.frame * ella.width, 0, ella.width, ella.height, 0, 0, ella.width, ella.height);
   ctx.restore();
 
-  // 💖 Mostrar corazones solo si AMBOS están en idle y EN EL CENTRO
   const enCentro = 
     Math.abs(player.x - centroX) < 1 && 
     Math.abs(ella.x - centroElla) < 1;
