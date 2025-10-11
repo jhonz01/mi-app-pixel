@@ -5,16 +5,28 @@ const OFFLINE_FALLBACK = './index.html';
 async function cacheAllFiles() {
   const cache = await caches.open(CACHE_NAME);
 
-  // Listar todos los archivos de la carpeta (solo del mismo origen)
   const urlsToCache = [
     './index.html',
     './manifest.json',
     './icon-192.png',
-    './icon-512.png'
+    './icon-512.png',
+    './sprites/idle.png',
+    './sprites/walk.png',
+    './sprites/ella_idle.png',
+    './sprites/ella_walk.png',
+    './sprites/corazones_animados.png',
+    './sprites/suelo.png',
+    './sprites/fondo_nubes_dia.png',
+    './sprites/fondo_nubes_tarde.png',
+    './sprites/fondo_nubes_noche.png',
+    './voz/voz1.mp3',
+    './voz/voz2.mp3',
+    './voz/voz3.mp3',
+    './voz/voz4.mp3'
   ];
 
-  // Intentamos cachear cualquier archivo que ya esté en la página
-  const resp = await fetch('./'); // Trae index.html
+  // Cachear cualquier archivo que esté en la página
+  const resp = await fetch('./');
   const text = await resp.text();
   const matches = text.match(/src="([^"]+)"/g) || [];
   matches.forEach(m => {
@@ -57,7 +69,6 @@ self.addEventListener('fetch', event => {
         }
         return response;
       }).catch(() => {
-        // Si falla la red, devolver index.html para la app SPA
         if (event.request.mode === 'navigate') {
           return caches.match(OFFLINE_FALLBACK);
         }
