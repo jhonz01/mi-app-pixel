@@ -257,37 +257,50 @@ function crearCola(lista, key) {
 
 
 // --- 🎤 VOZ (pausa música mientras suena) ---
-document.getElementById("btnVoz").onclick = async () => {
-  const voz = crearCola(voces, "vocesUsadas");
-  const audioVoz = new Audio(voz);
+let currentAudio = null;
+let isChangingVoice = false; // evita pulsaciones rápidas
 
-  // 🎧 Crear contexto de audio para aplicar efectos suaves
-  const context = new (window.AudioContext || window.webkitAudioContext)();
+document.getElementById("btnVoz").onclick = async () => {
+  if (isChangingVoice) return; // evita que se pulse mientras se cambia la voz
+  isChangingVoice = true;
+
+  if (currentAudio) {
+    if (!currentAudio.paused) {
+      currentAudio.pause();
+      isChangingVoice = false;
+      return;
+    } else {
+      currentAudio.play();
+      isChangingVoice = false;
+      return;
+    }
+  }
+
+  const voz = crearCola(voces, "vocesUsadas");
+  currentAudio = new Audio(voz);
+
+  const context = window.audioContext || (window.audioContext = new (window.AudioContext || window.webkitAudioContext)());
   const gainNode = context.createGain();
-  const source = context.createMediaElementSource(audioVoz);
+  const source = context.createMediaElementSource(currentAudio);
   source.connect(gainNode).connect(context.destination);
 
-  // Intentar activar el contexto (algunos navegadores lo requieren manualmente)
   try { await context.resume(); } catch {}
 
-  // 🎵 Bajar volumen global de la página (efecto fade out)
-  const iframes = document.querySelectorAll("iframe");
-  iframes.forEach(frame => frame.style.transition = "filter 0.5s ease");
-  iframes.forEach(frame => frame.style.filter = "brightness(0.6)");
+  document.querySelectorAll("iframe").forEach(frame => frame.style.filter = "brightness(0.6)");
 
-  // Simular que la música baja poco a poco
   gainNode.gain.linearRampToValueAtTime(0.1, context.currentTime + 0.5);
+  currentAudio.play();
 
-  // ▶️ Reproducir tu voz
-  audioVoz.play();
-
-  audioVoz.onended = () => {
-    // 🔊 Restaurar volumen (efecto fade in)
+  currentAudio.onended = () => {
     gainNode.gain.linearRampToValueAtTime(1, context.currentTime + 0.5);
-
-    iframes.forEach(frame => frame.style.filter = "brightness(1)");
+    document.querySelectorAll("iframe").forEach(frame => frame.style.filter = "brightness(1)");
+    currentAudio = null;
   };
+
+  isChangingVoice = false;
 };
+
+
 
 
 
