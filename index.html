@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pa' ti mi cachetona 💖</title>
 <style>
   body {
@@ -14,17 +15,20 @@
   }
   h1 {
     margin-top: 10px;
-    font-size: 16px;
+    font-size: 14px;
   }
   canvas {
     background-color: #000;
     display: block;
-    margin: 10px auto;
+    margin: 0 auto;
     image-rendering: pixelated;
+    width: 100vw;
+    height: auto;
+    max-height: 80vh;
   }
   #msgBox {
     margin-top: 10px;
-    font-size: 12px;
+    font-size: 10px;
     background: rgba(255,255,255,0.1);
     padding: 5px;
     border-radius: 8px;
@@ -32,17 +36,17 @@
   }
   .btn {
     margin: 5px;
-    padding: 5px 10px;
+    padding: 6px 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     background: #ff69b4;
     color: white;
     cursor: pointer;
     font-size: 10px;
   }
-  .btn:hover { background: #ff85c2; }
-  @media (max-width:600px){
-    canvas{ width:95vw; height:auto; }
+  .btn:active {
+    background: #ff8ac5;
+    transform: scale(0.96);
   }
 </style>
 </head>
@@ -60,6 +64,15 @@
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Adaptación dinámica al tamaño de la pantalla
+function ajustarCanvas() {
+  const escala = window.innerWidth / 480;
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = (240 * escala) + "px";
+}
+window.addEventListener('resize', ajustarCanvas);
+ajustarCanvas();
 
 // --- Sprites ---
 const player = {x:20, y:150, frame:0, frameCount:4, width:32, height:32, speed:1.5, action:"idle", autoWalk:false};
@@ -137,7 +150,6 @@ const heart = {
 };
 let heartVisible = false;
 
-// ---- FUNCIONES NUEVAS ----
 function actualizarCorazones() {
   // Calcula las posiciones donde deberían estar ambos en el centro
   let centroX = (canvas.width - player.width) / 2 - player.width / 2;
@@ -170,7 +182,7 @@ function dibujarCorazones() {
 
   // Ajuste para centrar la imagen del corazón en el punto medio
   const drawX = midX - heart.width / 2;
-  const drawY = midY - 10; // ligeramente arriba de las cabezas
+  const drawY = drawY = midY - 10; // ligeramente arriba de las cabezas
 
   ctx.drawImage(
     heartSprite,
@@ -178,7 +190,6 @@ function dibujarCorazones() {
     drawX, drawY, heart.width, heart.height
   );
 }
-// ---- FIN FUNCIONES NUEVAS ----
 
 // --- Dibujo del fondo dinámico ---
 function drawFondo() {
@@ -244,7 +255,7 @@ function update() {
     if (ella.x > centroElla) ella.x -= ella.speed; else {ella.x = centroElla;ella.action = "idle";}
   }
 
-  actualizarCorazones(); // actualiza la animación de corazones
+  actualizarCorazones();
   draw();
   requestAnimationFrame(update);
 }
