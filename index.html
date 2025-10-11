@@ -122,7 +122,6 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-// === SPRITES ===
 const sprites = {
   idle: new Image(),
   walk: new Image(),
@@ -145,18 +144,15 @@ sprites.fondoDia.src = "sprites/fondo_nubes_dia.png";
 sprites.fondoTarde.src = "sprites/fondo_nubes_tarde.png";
 sprites.fondoNoche.src = "sprites/fondo_nubes_noche.png";
 
-// === PERSONAJES ===
 let player = { x: 0, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 let ella = { x: canvas.width - 32, y: canvas.height - 64, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
-// === MENSAJE ===
 function nuevoMensaje() {
   document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
 }
 document.getElementById("btnMensaje").onclick = nuevoMensaje;
 document.getElementById("mensaje").onclick = nuevoMensaje;
 
-// === CONTROLES ===
 document.getElementById("btnAutoWalk").onclick = () => {
   player.x = 0;
   ella.x = canvas.width - ella.width;
@@ -171,7 +167,6 @@ document.getElementById("btnMusica").onclick = () => musica.paused ? musica.play
 const voz = document.getElementById("voz");
 document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
 
-// === CIELO, ESTRELLAS Y NUBES ===
 let estrellas = Array.from({length: 50}, () => ({
   x: Math.random() * canvas.width,
   y: Math.random() * (canvas.height - 32),
@@ -194,9 +189,8 @@ let clouds = Array.from({length: 5}, () => ({
   speed: 0.02 + Math.random()*0.02
 }));
 
-// === CORAZONES ===
 let frameCorazon = 0;
-const anchoCorazon = 286 / 13; // ≈22px por frame
+const anchoCorazon = 286 / 13;
 const altoCorazon = 60;
 let frameTimer = 0;
 
@@ -219,7 +213,6 @@ function dibujarEscenario() {
   if (fondoActual.complete && fondoActual.naturalWidth > 0)
     ctx.drawImage(fondoActual, 0, 0, canvas.width, canvas.height);
 
-  // estrellas y fugaces
   if (hora >= 19 || hora < 5) {
     estrellas.forEach(e=>{
       e.brillo += (Math.random()-0.5)*0.1;
@@ -238,7 +231,6 @@ function dibujarEscenario() {
     fugaces = fugaces.filter(f=>f.vida>0);
   }
 
-  // nubes simples
   clouds.forEach(cl=>{
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
@@ -247,7 +239,6 @@ function dibujarEscenario() {
     if (cl.x>canvas.width) cl.x=-cl.size;
   });
 
-  // suelo
   const tiles = Math.ceil(canvas.width / 320);
   for (let i = 0; i < tiles; i++)
     ctx.drawImage(sprites.suelo, i * 320, canvas.height - 32, 320, 32);
@@ -261,21 +252,20 @@ function update() {
     frameCorazon = (frameCorazon + 1) % 13;
   }
 
-  let centroX = (canvas.width - player.width)/2 - player.width/2;
-  let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
+  const centroX = (canvas.width - player.width)/2 - player.width/2;
+  const centroElla = (canvas.width - ella.width)/2 + ella.width/2;
 
   if (player.autoWalk) {
     if (player.x < centroX) player.x += player.speed;
-    else { player.x = centroX; player.action = "idle"; }
+    else { player.x = centroX; player.action = "idle"; player.autoWalk = false; }
   }
   if (ella.autoWalk) {
     if (ella.x > centroElla) ella.x -= ella.speed;
-    else { ella.x = centroElla; ella.action = "idle"; }
+    else { ella.x = centroElla; ella.action = "idle"; ella.autoWalk = false; }
   }
 
   dibujarEscenario();
 
-  // dibujar personajes
   ctx.drawImage(sprites[player.action], player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
   ctx.save();
   ctx.translate(ella.x + ella.width, ella.y);
@@ -283,8 +273,12 @@ function update() {
   ctx.drawImage(sprites["ella"+capitalize(ella.action)], ella.frame * ella.width, 0, ella.width, ella.height, 0, 0, ella.width, ella.height);
   ctx.restore();
 
-  // corazones sobre las cabezas
-  if (player.action === "idle" && ella.action === "idle") {
+  // 💖 Mostrar corazones solo si AMBOS están en idle y EN EL CENTRO
+  const enCentro = 
+    Math.abs(player.x - centroX) < 1 && 
+    Math.abs(ella.x - centroElla) < 1;
+
+  if (enCentro && player.action === "idle" && ella.action === "idle") {
     const centroXCorazon = (player.x + ella.x + player.width) / 2 - anchoCorazon / 2;
     const centroYCorazon = player.y - altoCorazon + 10;
     ctx.drawImage(sprites.corazones, frameCorazon * anchoCorazon, 0, anchoCorazon, altoCorazon, centroXCorazon, centroYCorazon, anchoCorazon, altoCorazon);
