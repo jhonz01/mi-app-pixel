@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pa' ti mi cachetona 💖</title>
+  <title> JELOUUU TE AMO MI VALE ❤️</title>
 
   <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#222" />
@@ -116,13 +116,13 @@
   </style>
 </head>
 <body>
-  <h1>Pa' ti mi cachetona 💖</h1>
+  <h1> JELOUUU TE AMO MI VALE ❤️</h1>
   <canvas id="gameCanvas" width="320" height="160"></canvas>
 
 <!-- NUEVO: reproductor Spotify -->
 <div id="spotifyPlayer"></div>
 
-<div id="mensaje">Pa’ ti mi cachetona hermosa 🌹</div>
+<div id="mensaje"> JELOUUU TE AMO MI VALE ❤️</div>
 
   <div class="controles">
     <button id="btnAutoWalk">MOVE</button>
@@ -134,6 +134,44 @@
 
   <script>
 'use strict';
+function dibujarSolYLunaPixel() {
+  const hora = new Date().getHours() + new Date().getMinutes()/60;
+  const size = 16; // tamaño del cuadrado (pixelart)
+  
+  // --- SOL (6 a 18) ---
+  if (hora >= 6 && hora < 18) {
+    const t = (hora - 6) / 12;
+    const x = t * canvas.width;
+    const y = Math.sin(t * Math.PI) * 50 + 40;
+    
+    ctx.fillStyle = "#FFD93B";
+    ctx.fillRect(x - size/2, y - size/2, size, size);
+  }
+
+  // --- LUNA (18 a 6) ---
+  else {
+    let t;
+    if (hora >= 18) t = (hora - 18) / 12;
+    else t = (hora + 6) / 12;
+    const x = t * canvas.width;
+    const y = Math.sin(t * Math.PI) * 50 + 40;
+
+    const hoy = new Date();
+    const lp = 2551443;
+    const ahora = hoy.getTime()/1000;
+    const lunaNueva = new Date("2025-10-06T00:00:00Z").getTime()/1000;
+    const fase = ((ahora - lunaNueva) % lp) / lp;
+
+    ctx.fillStyle = "#F5F3CE";
+    ctx.fillRect(x - size/2, y - size/2, size, size);
+
+    const faseNormal = Math.cos(fase * 2 * Math.PI);
+    ctx.fillStyle = "#0B0033";
+
+    if (faseNormal > 0) ctx.fillRect(x, y - size/2, size/2, size);
+    else ctx.fillRect(x - size/2, y - size/2, size/2, size);
+  }
+}
 
 
 const canvas = document.getElementById("gameCanvas");
@@ -355,6 +393,7 @@ function update() {
   }
 
   dibujarEscenario();
+  dibujarSolYLunaPixel();
 
   ctx.drawImage(sprites[player.action], player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
   ctx.save();
