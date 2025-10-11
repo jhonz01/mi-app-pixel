@@ -1,266 +1,269 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pa' ti mi cachetona 💖</title>
-<style>
-  body {
-    background-color: #000;
-    margin: 0;
-    overflow: hidden;
-    font-family: 'Press Start 2P', cursive;
-    color: white;
-    text-align: center;
-  }
-  h1 {
-    margin-top: 10px;
-    font-size: 14px;
-  }
-  canvas {
-    background-color: #000;
-    display: block;
-    margin: 0 auto;
-    image-rendering: pixelated;
-    width: 100vw;
-    height: auto;
-    max-height: 80vh;
-  }
-  #msgBox {
-    margin-top: 10px;
-    font-size: 10px;
-    background: rgba(255,255,255,0.1);
-    padding: 5px;
-    border-radius: 8px;
-    display: inline-block;
-  }
-  .btn {
-    margin: 5px;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 8px;
-    background: #ff69b4;
-    color: white;
-    cursor: pointer;
-    font-size: 10px;
-  }
-  .btn:active {
-    background: #ff8ac5;
-    transform: scale(0.96);
-  }
-</style>
-</head>
-<body>
-  <h1>Pa’ ti mi cachetona 💖</h1>
-  <canvas id="gameCanvas" width="480" height="240"></canvas>
-  <div>
-    <button class="btn" id="btnMove">MOVE</button>
-    <button class="btn" id="btnPlay">PLAY</button>
-    <button class="btn" id="btnVoice">VOICE</button>
-    <button class="btn" id="btnMsg">MSG</button>
-  </div>
-  <div id="msgBox">Eres mi persona favorita 💞</div>
-
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  const mensajes = [
+    "Pa’ ti mi cachetona hermosa 🌹",
+    "Te extraño mucho 💖",
+    "Eres mi persona favorita 😘",
+    "Siempre pienso en ti 🥰",
+    "¡Sonríe, mi amor! 😊",
+    "Tú eres mi cielo 🌈",
+    "¡Te amo infinito! 💞",
+    "Eres mi pixel preferido 🟪",
+    "Quiero abrazarte ya 🫂",
+    "¡Eres mi razón de sonreír! 😍"
+  ];
 
-// Adaptación dinámica al tamaño de la pantalla
-function ajustarCanvas() {
-  const escala = window.innerWidth / 480;
-  canvas.style.width = window.innerWidth + "px";
-  canvas.style.height = (240 * escala) + "px";
-}
-window.addEventListener('resize', ajustarCanvas);
-ajustarCanvas();
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
 
-// --- Sprites ---
-const player = {x:20, y:150, frame:0, frameCount:4, width:32, height:32, speed:1.5, action:"idle", autoWalk:false};
-const ella = {x:430, y:150, frame:0, frameCount:4, width:32, height:32, speed:1.5, action:"idle", autoWalk:false};
+  const sprites = {
+    idle: new Image(),
+    walk: new Image(),
+    ellaIdle: new Image(),
+    ellaWalk: new Image()
+  };
+  sprites.idle.src = "sprites/idle.png";
+  sprites.walk.src = "sprites/walk.png";
+  sprites.ellaIdle.src = "sprites/ella_idle.png";
+  sprites.ellaWalk.src = "sprites/ella_walk.png";
 
-const sprites = {
-  idle: new Image(),
-  walk: new Image(),
-  ella_idle: new Image(),
-  ella_walk: new Image(),
-  suelo: new Image(),
-  nubesDia: new Image(),
-  nubesTarde: new Image(),
-  nubesNoche: new Image()
-};
+  // --- NUEVO: Sprite de corazones personalizados ---
+  const corazonesSprite = new Image();
+  corazonesSprite.src = "sprites/corazones.png"; // su archivo de 286x60 px
+  const HEART_FRAME_WIDTH = 286 / 13;
+  const HEART_FRAME_HEIGHT = 60;
+  let heartFrame = 0;
+  let heartFrameTimer = 0;
 
-sprites.idle.src = "sprites/idle.png";
-sprites.walk.src = "sprites/walk.png";
-sprites.ella_idle.src = "sprites/ella_idle.png";
-sprites.ella_walk.src = "sprites/ella_walk.png";
-sprites.suelo.src = "sprites/suelo.png";
-sprites.nubesDia.src = "sprites/fondo_nubes_dia.png";
-sprites.nubesTarde.src = "sprites/fondo_nubes_tarde.png";
-sprites.nubesNoche.src = "sprites/fondo_nubes_noche.png";
+  let corazones = [];
+  let corazonSpawnTimer = 0;
 
-// --- Música y voz ---
-const musica = new Audio("musica.mp3");
-musica.loop = true;
-const voz = new Audio("mi_voz.mp3");
+  // --- NUEVO: Nubes PNG de fondo ---
+  const fondoNubes = {
+    dia: new Image(),
+    tarde: new Image(),
+    noche: new Image()
+  };
+  fondoNubes.dia.src = "sprites/fondo_nubes_dia.png";
+  fondoNubes.tarde.src = "sprites/fondo_nubes_tarde.png";
+  fondoNubes.noche.src = "sprites/fondo_nubes_noche.png";
 
-// --- Mensajes ---
-const mensajes = [
-  "Eres mi persona favorita 💞",
-  "Contigo todo es bonito 🌸",
-  "Eres mi paz y mi caos bonito 💫",
-  "Mi cachetona preciosa 💖",
-  "Gracias por existir 💕"
-];
-let msgIndex = 0;
-document.getElementById("btnMsg").onclick = () => {
-  msgIndex = (msgIndex + 1) % mensajes.length;
-  document.getElementById("msgBox").textContent = mensajes[msgIndex];
-};
+  let player = { x: 0, y: canvas.height - 32 - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
+  let ella = { x: canvas.width - 32, y: canvas.height - 32 - 32, width: 32, height: 32, frame: 0, frameCount: 4, speed: 1.5, action: "idle", autoWalk: false };
 
-// --- Botones ---
-document.getElementById("btnPlay").onclick = () => {
-  if (musica.paused) musica.play(); else musica.pause();
-};
-document.getElementById("btnVoice").onclick = () => { voz.play(); };
-document.getElementById("btnMove").onclick = () => {
-  player.action = "walk"; ella.action = "walk";
-  player.autoWalk = true; ella.autoWalk = true;
-};
+  function nuevoMensaje() {
+    document.getElementById("mensaje").innerText = mensajes[Math.floor(Math.random()*mensajes.length)];
+  }
+  document.getElementById("btnMensaje").onclick = nuevoMensaje;
+  document.getElementById("mensaje").onclick = nuevoMensaje;
 
-// --- Variables del fondo ---
-let hora = new Date().getHours();
-let fase;
-if (hora >= 6 && hora < 12) fase = "amanecer";
-else if (hora >= 12 && hora < 18) fase = "dia";
-else if (hora >= 18 && hora < 20) fase = "tarde";
-else fase = "noche";
+  document.getElementById("btnAutoWalk").onclick = () => {
+    player.x = 0;
+    ella.x = canvas.width - ella.width;
+    player.action = "walk";
+    ella.action = "walk";
+    player.autoWalk = true;
+    ella.autoWalk = true;
+    corazones = [];
+  };
 
-let frameTimer = 0;
+  const musica = document.getElementById("musica");
+  document.getElementById("btnMusica").onclick = () => musica.paused ? musica.play() : musica.pause();
+  const voz = document.getElementById("voz");
+  document.getElementById("btnVoz").onclick = () => { voz.currentTime = 0; voz.play(); };
 
-// --- Corazones animados personalizados ---
-const heartSprite = new Image();
-heartSprite.src = "sprites/heart.png"; // su archivo (286x60, 13 frames)
-const heart = {
-  frame: 0,
-  frameCount: 13,
-  width: 286 / 13, // ~22 px cada frame
-  height: 60,
-  frameSpeed: 6,
-  timer: 0
-};
-let heartVisible = false;
+  // estrellas
+  let estrellas = Array.from({length: 50}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * (canvas.height - 32),
+    brillo: Math.random()
+  }));
 
-function actualizarCorazones() {
-  // Calcula las posiciones donde deberían estar ambos en el centro
-  let centroX = (canvas.width - player.width) / 2 - player.width / 2;
-  let centroElla = (canvas.width - ella.width) / 2 + ella.width / 2;
-
-  // Verifica si ambos están muy cerca del centro y en "idle"
-  let ambosCentro =
-    Math.abs(player.x - centroX) < 1 &&
-    Math.abs(ella.x - centroElla) < 1 &&
-    player.action === "idle" &&
-    ella.action === "idle";
-
-  heartVisible = ambosCentro;
-
-  // Control del frame de animación
-  if (heartVisible) {
-    heart.timer++;
-    if (heart.timer % heart.frameSpeed === 0) {
-      heart.frame = (heart.frame + 1) % heart.frameCount;
+  let fugaces = [];
+  function generarFugaces() {
+    let cantidad = Math.floor(Math.random()*4);
+    for (let i=0; i<cantidad; i++) {
+      fugaces.push({x: Math.random()*canvas.width,y: Math.random()*canvas.height/2,vx: -2 - Math.random()*2,vy: 1 + Math.random()*1,vida: 50 + Math.random()*50});
     }
   }
-}
+  setInterval(generarFugaces, 8000);
 
-function dibujarCorazones() {
-  if (!heartVisible) return;
+  // nubes lentas animadas
+  let clouds = Array.from({length: 5}, () => ({
+    x: Math.random()*canvas.width,
+    y: 20 + Math.random()*40,
+    size: 10 + Math.random()*15,
+    speed: 0.02 + Math.random()*0.02
+  }));
 
-  // Punto medio exacto entre ambos personajes
-  const midX = (player.x + player.width / 2 + ella.x + ella.width / 2) / 2;
-  const midY = Math.min(player.y, ella.y) - heart.height / 2;
-
-  // Ajuste para centrar la imagen del corazón en el punto medio
-  const drawX = midX - heart.width / 2;
-  const drawY = drawY = midY - 10; // ligeramente arriba de las cabezas
-
-  ctx.drawImage(
-    heartSprite,
-    heart.frame * heart.width, 0, heart.width, heart.height,
-    drawX, drawY, heart.width, heart.height
-  );
-}
-
-// --- Dibujo del fondo dinámico ---
-function drawFondo() {
-  ctx.save();
-  if (fase === "amanecer") {
-    let grad = ctx.createLinearGradient(0,0,0,canvas.height);
-    grad.addColorStop(0,"#FFB347");
-    grad.addColorStop(1,"#FFD194");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-  } else if (fase === "dia") {
-    ctx.fillStyle = "#87CEEB";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(sprites.nubesDia, (frameTimer*0.3)%canvas.width - canvas.width, 20);
-    ctx.drawImage(sprites.nubesDia, (frameTimer*0.3)%canvas.width, 20);
-  } else if (fase === "tarde") {
-    ctx.fillStyle = "#FAD0C4";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(sprites.nubesTarde, (frameTimer*0.2)%canvas.width - canvas.width, 30);
-    ctx.drawImage(sprites.nubesTarde, (frameTimer*0.2)%canvas.width, 30);
-  } else {
-    ctx.fillStyle = "#001848";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(sprites.nubesNoche, (frameTimer*0.1)%canvas.width - canvas.width, 40);
-    ctx.drawImage(sprites.nubesNoche, (frameTimer*0.1)%canvas.width, 40);
-  }
-  ctx.restore();
-}
-
-// --- Dibujo general ---
-function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawFondo();
-  ctx.drawImage(sprites.suelo,0,player.y+player.height,canvas.width,20);
-  ctx.drawImage(
-    player.action==="idle"?sprites.idle:sprites.walk,
-    player.frame*player.width,0,player.width,player.height,
-    player.x,player.y,player.width,player.height
-  );
-  ctx.drawImage(
-    ella.action==="idle"?sprites.ella_idle:sprites.ella_walk,
-    ella.frame*ella.width,0,ella.width,ella.height,
-    ella.x,ella.y,ella.width,ella.height
-  );
-
-  dibujarCorazones();
-}
-
-// --- Bucle principal ---
-function update() {
-  frameTimer++;
-  if (frameTimer % 10 === 0){
-    player.frame = (player.frame + 1) % player.frameCount;
-    ella.frame = (ella.frame + 1) % ella.frameCount;
+  function getMoonPhaseFraction() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const c = 29.530588853;
+    const j = (year-2000)*12.3685 + month;
+    const i = j|0;
+    const k = i/1236.85;
+    const t = k*k;
+    const n = day + (year-2000)*365.25 + month*30.6;
+    const phase = (n%c)/c;
+    return phase;
   }
 
-  let centroX = (canvas.width - player.width)/2 - player.width/2;
-  let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
-  if (player.autoWalk) {
-    if (player.x < centroX) player.x += player.speed; else {player.x = centroX;player.action = "idle";}
-  }
-  if (ella.autoWalk) {
-    if (ella.x > centroElla) ella.x -= ella.speed; else {ella.x = centroElla;ella.action = "idle";}
+  const sueloImg = new Image();
+  sueloImg.src = "sprites/suelo.png";
+
+  function dibujarEscenario() {
+    let hora = new Date().getHours();
+    let colorCielo;
+    if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
+    else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
+    else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
+    else colorCielo = '#0B0033';
+
+    ctx.fillStyle = colorCielo;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    let fondoActual;
+    if (hora >= 8 && hora < 17) fondoActual = fondoNubes.dia;
+    else if (hora >= 17 && hora < 19) fondoActual = fondoNubes.tarde;
+    else fondoActual = fondoNubes.noche;
+
+    if (fondoActual.complete && fondoActual.naturalWidth > 0) {
+      ctx.drawImage(fondoActual, 0, 0, canvas.width, canvas.height);
+    }
+
+    if (hora >= 19 || hora < 5) {
+      estrellas.forEach(e=>{
+        e.brillo += (Math.random()-0.5)*0.1;
+        e.brillo = Math.max(0.2, Math.min(1, e.brillo));
+        ctx.fillStyle = `rgba(255,255,255,${e.brillo})`;
+        ctx.fillRect(Math.floor(e.x), Math.floor(e.y), 1, 1);
+      });
+      fugaces.forEach(f=>{
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(f.x,f.y);
+        ctx.lineTo(f.x+5,f.y-2);
+        ctx.stroke();
+        f.x += f.vx; f.y += f.vy; f.vida--;
+      });
+      fugaces = fugaces.filter(f=>f.vida>0);
+    }
+
+    if (hora>=6 && hora<19){
+      let sunProgress = (hora-6)/13;
+      let sunX = sunProgress*canvas.width;
+      let sunY = 40 - Math.sin(sunProgress*Math.PI)*30;
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(sunX, sunY, 16,16);
+    }
+
+    if (hora>=19 || hora<6){
+      let moonProgress = (hora>=19? (hora-19)/11 : (hora+5)/11);
+      let moonX = canvas.width - moonProgress*canvas.width;
+      let moonY = 40 - Math.sin(moonProgress*Math.PI)*30;
+      let phase = getMoonPhaseFraction();
+      ctx.fillStyle = '#CCCCCC';
+      ctx.fillRect(moonX, moonY, 16,16);
+      ctx.fillStyle = colorCielo;
+      ctx.fillRect(moonX+16*phase, moonY, 16*(1-phase),16);
+    }
+
+    clouds.forEach(cl=>{
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(cl.x, cl.y, cl.size, cl.size/2);
+      ctx.fillRect(cl.x+cl.size/4, cl.y-2, cl.size/2, cl.size/2);
+      cl.x += cl.speed;
+      if (cl.x>canvas.width) cl.x=-cl.size;
+    });
+
+    const tiles = Math.ceil(canvas.width / 320);
+    for (let i = 0; i < tiles; i++) {
+      ctx.drawImage(sueloImg, i * 320, canvas.height - 32, 320, 32);
+    }
   }
 
-  actualizarCorazones();
-  draw();
-  requestAnimationFrame(update);
-}
+  let frameTimer = 0;
+  function update() {
+    frameTimer++;
+    if (frameTimer % 10 === 0){
+      player.frame = (player.frame + 1) % player.frameCount;
+      ella.frame = (ella.frame + 1) % ella.frameCount;
+    }
 
-update();
+    let centroX = (canvas.width - player.width)/2 - player.width/2;
+    let centroElla = (canvas.width - ella.width)/2 + ella.width/2;
+
+    if (player.autoWalk) {
+      if (player.x < centroX) player.x += player.speed; 
+      else {player.x = centroX; player.action = "idle";}
+    }
+    if (ella.autoWalk) {
+      if (ella.x > centroElla) ella.x -= ella.speed; 
+      else {ella.x = centroElla; ella.action = "idle";}
+    }
+
+    // --- NUEVO: corazones animados infinitos ---
+    if (player.action === "idle" && ella.action === "idle" &&
+        player.x === centroX && ella.x === centroElla) {
+      corazonSpawnTimer++;
+      if (corazonSpawnTimer > 40) {
+        corazones.push({
+          x: (player.x + ella.x) / 2 + player.width / 2 - HEART_FRAME_WIDTH / 2,
+          y: player.y - 20,
+          vy: -0.5 - Math.random() * 0.3,
+          vida: 200
+        });
+        corazonSpawnTimer = 0;
+      }
+    }
+
+    corazones.forEach(c => {
+      c.y += c.vy;
+      c.vida--;
+    });
+    corazones = corazones.filter(c => c.vida > 0);
+
+    heartFrameTimer++;
+    if (heartFrameTimer % 6 === 0) {
+      heartFrame = (heartFrame + 1) % 13;
+    }
+
+    draw();
+    requestAnimationFrame(update);
+  }
+
+  function draw() {
+    dibujarEscenario();
+
+    let sprite1 = sprites[player.action];
+    ctx.drawImage(sprite1, player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
+
+    let sprite2 = sprites["ella" + capitalize(ella.action)];
+    ctx.save();
+    ctx.translate(ella.x + ella.width, ella.y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(sprite2, ella.frame * ella.width, 0, ella.width, ella.height, 0, 0, ella.width, ella.height);
+    ctx.restore();
+
+    // --- NUEVO: dibujar corazones animados ---
+    corazones.forEach(c => {
+      if (corazonesSprite.complete) {
+        ctx.globalAlpha = 0.9; // ligera transparencia romántica 💞
+        ctx.drawImage(
+          corazonesSprite,
+          heartFrame * HEART_FRAME_WIDTH, 0,
+          HEART_FRAME_WIDTH, HEART_FRAME_HEIGHT,
+          c.x, c.y,
+          HEART_FRAME_WIDTH / 2, HEART_FRAME_HEIGHT / 2
+        );
+        ctx.globalAlpha = 1;
+      }
+    });
+  }
+
+  function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
+  update();
 </script>
-</body>
-</html>
