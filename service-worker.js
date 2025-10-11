@@ -1,49 +1,49 @@
-const CACHE_NAME = 'mi-cache-cachetona-v3';
-const OFFLINE_FALLBACK = './index.html';
+// Nombre de la caché
+const CACHE_NAME = 'mi-app-offline-v1';
 
-// Función para cachear todos los archivos de la carpeta
-async function cacheAllFiles() {
-  const cache = await caches.open(CACHE_NAME);
+// Archivos iniciales a cachear
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
 
-  const urlsToCache = [
-    './index.html',
-    './manifest.json',
-    './icon-192.png',
-    './icon-512.png',
-    './sprites/idle.png',
-    './sprites/walk.png',
-    './sprites/ella_idle.png',
-    './sprites/ella_walk.png',
-    './sprites/corazones_animados.png',
-    './sprites/suelo.png',
-    './sprites/fondo_nubes_dia.png',
-    './sprites/fondo_nubes_tarde.png',
-    './sprites/fondo_nubes_noche.png',
-    './voz/voz1.mp3',
-    './voz/voz2.mp3',
-    './voz/voz3.mp3',
-    './voz/voz4.mp3'
-  ];
+  // JS y CSS si los tienes
+  './main.js',
+  './style.css',
 
-  // Cachear cualquier archivo que esté en la página
-  const resp = await fetch('./');
-  const text = await resp.text();
-  const matches = text.match(/src="([^"]+)"/g) || [];
-  matches.forEach(m => {
-    const url = m.replace('src="','').replace('"','');
-    if (!urlsToCache.includes(url)) urlsToCache.push(url);
-  });
+  // Sprites
+  './sprites/idle.png',
+  './sprites/walk.png',
+  './sprites/ella_idle.png',
+  './sprites/ella_walk.png',
+  './sprites/corazones_animados.png',
+  './sprites/suelo.png',
+  './sprites/fondo_nubes_dia.png',
+  './sprites/fondo_nubes_tarde.png',
+  './sprites/fondo_nubes_noche.png',
 
-  await cache.addAll(urlsToCache);
-}
+  // Audios
+  './voz/voz1.mp3',
+  './voz/voz2.mp3',
+  './voz/voz3.mp3',
+  './voz/voz4.mp3',
 
-// Install: cache inicial
+  // Fallback (opcional)
+  './offline.html'
+];
+
+// Instalar y guardar todos los archivos
 self.addEventListener('install', event => {
-  event.waitUntil(cacheAllFiles());
+  console.log('Instalando service worker y cacheando recursos...');
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  );
   self.skipWaiting();
 });
 
-// Activate: limpiar caches viejos
+// Activar y limpiar versiones viejas del cache
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -56,21 +56,26 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: responder con cache o con red
+// Interceptar las peticiones
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+    caches.match(event.request).then(cachedResponse => {
+      // Si el archivo está en cache, úsalo
+      if (cachedResponse) return cachedResponse;
 
-      return fetch(event.request).then(response => {
-        const responseClone = response.clone();
+      // Si no, intenta traerlo de la red
+      return fetch(event.request).then(networkResponse => {
+        // Si es un archivo local (de tu app), lo guarda en cache automáticamente
         if (event.request.url.startsWith(self.location.origin)) {
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+          });
         }
-        return response;
+        return networkResponse;
       }).catch(() => {
+        // Si falla (offline), muestra index o un fallback
         if (event.request.mode === 'navigate') {
-          return caches.match(OFFLINE_FALLBACK);
+          return caches.match('./index.html');
         }
       });
     })
