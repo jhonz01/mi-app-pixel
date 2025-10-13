@@ -136,42 +136,60 @@
 'use strict';
 function dibujarSolYLunaPixel() {
   const hora = new Date().getHours() + new Date().getMinutes()/60;
-  const size = 16; // tamaño del cuadrado (pixelart)
-  
-  // --- SOL (6 a 18) ---
-  if (hora >= 6 && hora < 18) {
-    const t = (hora - 6) / 12;
+  const size = 32;
+
+  // 🌞 Sol
+  if (hora >= 5.5 && hora < 18.5) {
+    const t = (hora - 5.5) / (18.5 - 5.5);
     const x = t * canvas.width;
-    const y = Math.sin(t * Math.PI) * 50 + 60;
-    
+    const y = Math.sin(t * Math.PI) * 100 + 30;
+
     ctx.fillStyle = "#FFD93B";
     ctx.fillRect(x - size/2, y - size/2, size, size);
   }
 
-  // --- LUNA (18 a 6) ---
+  // 🌙 Luna
   else {
     let t;
-    if (hora >= 18) t = (hora - 18) / 12;
-    else t = (hora + 6) / 12;
-    const x = t * canvas.width;
-    const y = Math.sin(t * Math.PI) * 50 + 60;
+    if (hora >= 18.5) {
+      t = (hora - 18.5) / (24 - 18.5 + 5.5);
+    } else {
+      t = (hora + (24 - 18.5)) / (24 - 18.5 + 5.5);
+    }
 
+    const x = t * canvas.width;
+    const y = Math.sin(t * Math.PI) * 100 + 30;
+
+    // Fase lunar
     const hoy = new Date();
     const lp = 2551443;
     const ahora = hoy.getTime()/1000;
     const lunaNueva = new Date("2025-10-06T00:00:00Z").getTime()/1000;
     const fase = ((ahora - lunaNueva) % lp) / lp;
+    const faseNormal = Math.cos(fase * 2 * Math.PI);
 
-    ctx.fillStyle = "#F5F3CE";
+    // --- Cuerpo principal de la luna ---
+    ctx.fillStyle = "#F5F3CE"; // tono crema lunar
     ctx.fillRect(x - size/2, y - size/2, size, size);
 
-    const faseNormal = Math.cos(fase * 2 * Math.PI);
-    ctx.fillStyle = "#0B0033";
+    // --- Sombra suave según fase ---
+    // más gris, translúcido, con leve tinte azulado
+    ctx.fillStyle = "rgba(20, 30, 60, 0.5)";
+    if (faseNormal > 0) {
+      ctx.fillRect(x, y - size/2, size/2, size);
+    } else {
+      ctx.fillRect(x - size/2, y - size/2, size/2, size);
+    }
 
-    if (faseNormal > 0) ctx.fillRect(x, y - size/2, size/2, size);
-    else ctx.fillRect(x - size/2, y - size/2, size/2, size);
+    // --- Halo sutil (para brillo lunar) ---
+    ctx.fillStyle = "rgba(245, 243, 206, 0.15)";
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.9, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
+
+
 
 
 const canvas = document.getElementById("gameCanvas");
@@ -345,21 +363,24 @@ function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
 function dibujarEscenario() {
   let hora = new Date().getHours();
   let colorCielo;
-  if (hora >= 5 && hora < 8) colorCielo = '#FFB36B';
-  else if (hora >= 8 && hora < 17) colorCielo = '#87CEEB';
-  else if (hora >= 17 && hora < 19) colorCielo = '#FF7E5E';
+  if (hora >= 5.5 && hora < 6.5) colorCielo = '#FFB36B';
+  else if (hora >= 6.5 && hora < 17) colorCielo = '#87CEEB';
+  else if (hora >= 17 && hora < 18.5) colorCielo = '#FF7E5E';
   else colorCielo = '#0B0033';
   ctx.fillStyle = colorCielo;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
+dibujarSolYLunaPixel(); // 🌞🌙 dibuja el sol y la luna antes de las nubes
+
+
   let fondoActual;
-  if (hora >= 8 && hora < 17) fondoActual = sprites.fondoDia;
-  else if (hora >= 17 && hora < 19) fondoActual = sprites.fondoTarde;
+  if (hora >= 5.5 && hora < 17) fondoActual = sprites.fondoDia;
+  else if (hora >= 17 && hora < 18.5) fondoActual = sprites.fondoTarde;
   else fondoActual = sprites.fondoNoche;
   if (fondoActual.complete && fondoActual.naturalWidth > 0)
     ctx.drawImage(fondoActual, 0, 0, canvas.width, canvas.height);
 
-  if (hora >= 19 || hora < 5) {
+  if (hora >= 18.5 || hora < 5.5) {
     estrellas.forEach(e=>{
       e.brillo += (Math.random()-0.5)*0.1;
       e.brillo = Math.max(0.2, Math.min(1, e.brillo));
@@ -411,7 +432,7 @@ function update() {
   }
 
   dibujarEscenario();
-  dibujarSolYLunaPixel();
+
 
   ctx.drawImage(sprites[player.action], player.frame * player.width, 0, player.width, player.height, player.x, player.y, player.width, player.height);
   ctx.save();
