@@ -181,11 +181,7 @@ function dibujarSolYLunaPixel() {
       ctx.fillRect(x - size/2, y - size/2, size/2, size);
     }
 
-    // --- Halo sutil (para brillo lunar) ---
-    ctx.fillStyle = "rgba(245, 243, 206, 0.15)";
-    ctx.beginPath();
-    ctx.arc(x, y, size * 0.9, 0, Math.PI * 2);
-    ctx.fill();
+    
   }
 }
 
@@ -361,12 +357,14 @@ let frameTimer = 0;
 function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
 
 function dibujarEscenario() {
-  let hora = new Date().getHours();
+  let ahora = new Date();
+  let hora = ahora.getHours() + ahora.getMinutes() / 60; // incluye minutos
   let colorCielo;
-  if (hora >= 5.5 && hora < 6.5) colorCielo = '#FFB36B';
-  else if (hora >= 6.5 && hora < 17) colorCielo = '#87CEEB';
-  else if (hora >= 17 && hora < 18.5) colorCielo = '#FF7E5E';
-  else colorCielo = '#0B0033';
+  if (hora >= 5.5 && hora < 6.5) colorCielo = '#FFB36B';       // amanecer
+  else if (hora >= 6.5 && hora < 17) colorCielo = '#87CEEB';   // día
+  else if (hora >= 17 && hora < 18.5) colorCielo = '#FF7E5E';  // tarde
+  else colorCielo = '#0B0033';                                 // noche
+
   ctx.fillStyle = colorCielo;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 

@@ -1,5 +1,5 @@
 // Nombre de la caché
-const CACHE_NAME = 'mi-app-offline-v2';
+const CACHE_NAME = 'mi-app-offline-v3';
 
 // Archivos iniciales a cachear
 const urlsToCache = [
